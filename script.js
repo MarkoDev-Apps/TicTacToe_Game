@@ -55,6 +55,14 @@ function cellClick(e) {
   if (winCombo) {
     gameOver = true;
     if (current === "X") scoreX++; else scoreO++;
+    // Check for 3 wins and end game
+if (scoreX === 3 || scoreO === 3) {
+  setTimeout(() => {
+    alert(`${scoreX === 3 ? p1 : p2} wins the series!`);
+    location.reload(); // Reloads the page and goes back to start screen
+  }, 500); // slight delay to allow win animation
+  return;
+}
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     drawWinLine(winCombo);
     animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
