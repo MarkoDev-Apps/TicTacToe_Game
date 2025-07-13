@@ -78,19 +78,23 @@ function checkWin(player) {
 
 function drawWinLine(combo) {
   const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
+  const boardRect = boardEl.getBoundingClientRect();
+
   const [start, end] = [rects[0], rects[2]];
-  const startX = start.left + start.width/2 - boardEl.getBoundingClientRect().left;
-  const startY = start.top + start.height/2 - boardEl.getBoundingClientRect().top;
-  const endX = end.left + end.width/2 - boardEl.getBoundingClientRect().left;
-  const endY = end.top + end.height/2 - boardEl.getBoundingClientRect().top;
+
+  const startX = start.left + start.width / 2 - boardRect.left;
+  const startY = start.top + start.height / 2 - boardRect.top;
+  const endX = end.left + end.width / 2 - boardRect.left;
+  const endY = end.top + end.height / 2 - boardRect.top;
 
   ctx.strokeStyle = "#000000";  // black
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);
   ctx.stroke();
 }
+
 
 function animateWin(text) {
   const msgEl = document.getElementById("winMessage");
