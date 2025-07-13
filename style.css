@@ -1,38 +1,64 @@
 body {
   margin: 0;
   font-family: sans-serif;
-  background: #1caaa...
+  background: #1caa9c;
 }
-#board {
-  display: grid;
-  width: 450px; height: 450px;
-  grid-template: repeat(3, 1fr)/repeat(3, 1fr);
-  border: 6px solid #179187;
-  background: #1ba59c;
-  margin: 20px auto;
-  position: relative;
-}
-.cell {
-  border: 3px solid #179187;
-  display: flex; justify-content: center; align-items: center;
-  font-size: 3rem; cursor: pointer;
-}
-#info {
-  text-align: center;
-  color: white;
-  margin-bottom: 10px;
-}
+
 #name-entry, #game {
   text-align: center;
   margin-top: 30px;
 }
-input { padding: 8px; margin: 5px; font-size: 1rem; }
-button { padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  grid-template-rows: repeat(3, 150px);
+  gap: 6px;
+  width: 450px;
+  margin: 0 auto;
+  background-color: #1caa9c;
+}
+
+.cell {
+  width: 150px;
+  height: 150px;
+  font-size: 60px;
+  color: #545454;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+#info {
+  color: white;
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+  font-size: 1rem;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
 #overlay {
   position: absolute;
-  top:0; left:50%;
+  top: 0;
+  left: 50%;
   transform: translateX(-50%);
-  width:450px; height:555px;
+  width: 450px;
+  height: 555px;
   pointer-events: none;
 }
+
 
