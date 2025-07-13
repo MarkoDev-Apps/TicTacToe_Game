@@ -56,6 +56,7 @@ button {
 
 #overlay {
   position: absolute;
+  height: calc(100% + 80px); /* makes room for text below */
   top: 0;
   left: 50%;
   transform: translateX(-50%);
