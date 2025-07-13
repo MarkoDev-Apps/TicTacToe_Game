@@ -33,7 +33,9 @@ body {
   aspect-ratio: 1 / 1;
   background-color: #000000;
   margin: 0 auto; /* centers the board */
+  touch-action: manipulation;
 }
+
 
 #board div {
   background-color: #fff;
@@ -60,6 +62,17 @@ body {
   user-select: none;
   aspect-ratio: 1 / 1;
 }
+
+.cell:active {
+  transform: scale(0.95);
+  background-color: #ddd; /* subtle feedback */
+}
+
+.cell.filled {
+  cursor: default;
+  pointer-events: none;
+}
+
 
 #info {
   color: white;
@@ -140,6 +153,16 @@ button {
 @media (max-width: 600px) {
   body {
     padding: 10px;
+    font-size: 14px;
+  }
+
+    #name-entry,
+  #game {
+    width: 100%;
+  }
+
+    #scores, #turn, #names {
+    text-align: center;
   }
 
   input, button {
@@ -155,14 +178,22 @@ button {
   }
 }
 
+
 #footer {
   position: fixed;
   bottom: 10px;
   width: 100%;
   text-align: center;
-  color: #aaa;
+  font-weight: bold;
+  color: #ffffff;
   font-size: 0.9rem;
+  animation: welcomeBounce 3s ease-in-out;
 }
+
+input:invalid {
+  border: 2px solid red;
+}
+
 
 
 

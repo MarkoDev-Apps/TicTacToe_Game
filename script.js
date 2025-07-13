@@ -1,6 +1,8 @@
 const boardEl = document.getElementById("board");
 const overlay = document.getElementById("overlay");
 const ctx = overlay.getContext("2d");
+const winSound = document.getElementById("winSound");
+const drawSound = document.getElementById("drawSound");
 
 let board = Array(9).fill(null);
 let current = "X", gameOver = false;
@@ -15,8 +17,10 @@ window.onkeydown = (e) => {
 };
 
 function startGame() {
-  p1 = document.getElementById("p1").value.trim();
-  p2 = document.getElementById("p2").value.trim();
+  console.log("🎮 startGame() called");
+
+  const p1Name = document.getElementById("p1").value.trim();
+  const p2Name = document.getElementById("p2").value.trim();
 
   if (!p1Name || !p2Name) {
     alert("Please enter names for both Player 1 and Player 2.");
@@ -68,26 +72,46 @@ function cellClick(e) {
   if (gameOver || board[i]) return;
   board[i] = current;
   e.target.textContent = current;
+  e.target.classList.add('filled');
   const winCombo = checkWin(current);
   if (winCombo) {
-    gameOver = true;
-    if (current === "X") scoreX++; else scoreO++;
-    // Check for 3 wins and end game
-if (scoreX === 3 || scoreO === 3) {
-  setTimeout(() => {
-    alert(`${scoreX === 3 ? p1 : p2} wins the series!`);
-    location.reload(); // Reloads the page and goes back to start screen
-  }, 500); // slight delay to allow win animation
-  return;
-}
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    document.getElementById("winSound").play();
+  console.log('WIN combo:', winCombo);
+  gameOver = true;
+  try {
+    winSound.play();
+  } catch (err) {
+    console.warn("Win sound failed to play:", err);
+  }
+  if (current === "X") scoreX++; else scoreO++;
+  updateInfo(); // update score display
+   setTimeout(() => {
+    resetRound();
+  }, 5000);
+  // Check for 3 wins and end game
+  if (scoreX === 3 || scoreO === 3) {
+    setTimeout(() => {
+      alert(`${scoreX === 3 ? p1 : p2} wins the series!`);
+      location.reload();
+    }, 500);
+    return;
+  }
+  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
 
-    drawWinLine(winCombo);
-    animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
-  } else if (board.every(Boolean)) {
+  drawWinLine(winCombo);
+
+} else if (board.every(Boolean)) {
     gameOver = true;
+     try {
+    drawSound.play();
+  } catch (err) {
+    console.warn("Draw sound failed to play:", err);
+  }
+   setTimeout(() => {
+    resetRound();
+  }, 5000);
     animateWin("It's a draw!");
+    drawSound.play();  // new draw audio
   } else {
     current = current === "X" ? "O" : "X";
     updateInfo();
@@ -170,5 +194,14 @@ function animateWin(text) {
     updateInfo();
   }, 3000);
 }
+
+function resetRound() {
+  board = Array(9).fill(null);
+  gameOver = false;
+  current = "X";
+  buildBoard();       // Redraw cells if needed
+  updateInfo();       // Update UI with current turn and score
+}
+
 
 
