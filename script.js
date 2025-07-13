@@ -55,8 +55,9 @@ function cellClick(e) {
   if (winCombo) {
     gameOver = true;
     if (current === "X") scoreX++; else scoreO++;
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     drawWinLine(winCombo);
-    animateWin(`${current === "X" ? p1 : p2} wins!`);
+    animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
   } else if (board.every(Boolean)) {
     gameOver = true;
     animateWin("It's a draw!");
@@ -77,22 +78,40 @@ function checkWin(player) {
 }
 
 function drawWinLine(combo) {
-  const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
+  const rects = combo.map(i =>
+    boardEl.children[i].getBoundingClientRect()
+  );
   const boardRect = boardEl.getBoundingClientRect();
+  const start = rects[0], end = rects[2];
+  const startX = start.left + start.width/2 - boardRect.left;
+  const startY = start.top + start.height/2 - boardRect.top;
+  const endX = end.left + end.width/2 - boardRect.left;
+  const endY = end.top + end.height/2 - boardRect.top;
 
-  const [start, end] = [rects[0], rects[2]];
+  // Animation variables
+  const totalSteps = 20;
+  let step = 0;
 
-  const startX = start.left + start.width / 2 - boardRect.left;
-  const startY = start.top + start.height / 2 - boardRect.top;
-  const endX = end.left + end.width / 2 - boardRect.left;
-  const endY = end.top + end.height / 2 - boardRect.top;
+  const draw = () => {
+    const t = step / totalSteps;
+    const currentX = startX + (endX - startX) * t;
+    const currentY = startY + (endY - startY) * t;
 
-  ctx.strokeStyle = "#000000";  // black
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(startX, startY);
-  ctx.lineTo(endX, endY);
-  ctx.stroke();
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(currentX, currentY);
+    ctx.stroke();
+
+    if (step < totalSteps) {
+      step++;
+      requestAnimationFrame(draw);
+    }
+  };
+
+  draw();
 }
 
 
