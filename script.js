@@ -78,39 +78,41 @@ function checkWin(player) {
 }
 
 function drawWinLine(combo) {
-  const rects = combo.map(i =>
-    boardEl.children[i].getBoundingClientRect()
-  );
-  const boardRect = boardEl.getBoundingClientRect();
+  const rects = combo.map(i => boardEL.children[i].getBoundingClientRect());
+  const boardRect = boardEL.getBoundingClientRect();
+  const [startCell, , endCell] = rects;
+
   const getCenter = rect => ({
-  x: rect.left + rect.width / 2 - boardRect.left,
-  y: rect.top + rect.height / 2 - boardRect.top
-});
-// Get all 3 centers
-const centers = rects.map(getCenter);
-// Use first and last center
-const start = centers[0];
-const end = centers[2];
-// Optionally extend line slightly outward from the win line
-const dx = end.x - start.x;
-const dy = end.y - start.y;
-const offsetFactor = 0.15; // Tweak this as needed
-const startX = start.x - dx * offsetFactor;
-const startY = start.y - dy * offsetFactor;
-const endX = end.x + dx * offsetFactor;
-const endY = end.y + dy * offsetFactor;
-  // Animation variables
+    x: rect.left + rect.width / 2 - boardRect.left,
+    y: rect.top + rect.height / 2 - boardRect.top
+  });
+
+  const { x: startX, y: startY } = getCenter(startCell);
+  const { x: endX, y: endY } = getCenter(endCell);
+
+  // Shorten the line by trimming both ends
+  const shortenFactor = 0.85;
+  const dx = endX - startX;
+  const dy = endY - startY;
+
+  const adjustedStartX = startX + dx * (1 - shortenFactor) / 2;
+  const adjustedStartY = startY + dy * (1 - shortenFactor) / 2;
+  const adjustedEndX = endX - dx * (1 - shortenFactor) / 2;
+  const adjustedEndY = endY - dy * (1 - shortenFactor) / 2;
+
   const totalSteps = 20;
   let step = 0;
+
   const draw = () => {
     const t = step / totalSteps;
-    const currentX = startX + (endX - startX) * t;
-    const currentY = startY + (endY - startY) * t;
+    const currentX = adjustedStartX + (adjustedEndX - adjustedStartX) * t;
+    const currentY = adjustedStartY + (adjustedEndY - adjustedStartY) * t;
+
     ctx.clearRect(0, 0, overlay.width, overlay.height);
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(startX, startY);
+    ctx.moveTo(adjustedStartX, adjustedStartY);
     ctx.lineTo(currentX, currentY);
     ctx.stroke();
 
@@ -121,7 +123,6 @@ const endY = end.y + dy * offsetFactor;
   };
   draw();
 }
-
 
 function animateWin(text) {
   const msgEl = document.getElementById("winMessage");
