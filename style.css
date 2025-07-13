@@ -2,6 +2,9 @@ body {
   margin: 0;
   font-family: sans-serif;
   background: #1caa9c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #name-entry, #game {
@@ -11,31 +14,31 @@ body {
 
 #board {
   display: grid;
-  grid-template-columns: repeat(3, 150px);
-  grid-template-rows: repeat(3, 150px);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  width: 450px;
-  margin: 0 auto;
+  width: 90vw;
+  max-width: 450px;
+  aspect-ratio: 1 / 1;
   background-color: #1caa9c;
 }
 
 .cell {
-  width: 150px;
-  height: 150px;
-  font-size: 60px;
-  color: #545454;
+  font-size: 6vw;
+  max-font-size: 60px;
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   user-select: none;
+  aspect-ratio: 1 / 1;
 }
 
 #info {
   color: white;
   margin-top: 10px;
-  font-size: 18px;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 input {
@@ -56,8 +59,9 @@ button {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 450px;
-  height: 555px;
+  width: 90vw;
+  max-width: 450px;
+  aspect-ratio: 1 / 1;
   pointer-events: none;
 }
 
