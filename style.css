@@ -67,6 +67,7 @@ button {
 .fade-text {
   color: white;
   font-size: 40px;
+  font-weight; bold;
   margin-top: 15px;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;

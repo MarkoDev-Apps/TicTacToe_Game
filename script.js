@@ -94,13 +94,13 @@ function drawWinLine(combo) {
 
 function animateWin(text) {
   const msgEl = document.getElementById("winMessage");
-  msgEl.textContent = text;
+  msgEl.textContent = `🏆 ${text} 🏆`;
   msgEl.classList.add("visible");
 
   setTimeout(() => {
     msgEl.classList.remove("visible");
     msgEl.textContent = "";
     updateInfo();
-  }, 3000);
+  }, 4000);
 }
 
