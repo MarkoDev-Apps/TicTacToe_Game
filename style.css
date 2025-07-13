@@ -154,19 +154,6 @@ button {
   }
 }
 
-.player-info {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 20px;
-}
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-
 
 
 
