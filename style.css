@@ -28,17 +28,20 @@ body {
   width: 90vw;
   max-width: 450px;
   aspect-ratio: 1 / 1;
-  background-color: #000;
+  background-color: #000000;
+  margin: 0 auto; /* centers the board */
 }
 
 #board div {
-  background-color: white;
+  background-color: #fff;
   border: 2px solid black; /* ✅ Change this from teal to black */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 4rem;
+  font-size: 8vw; /* scales with screen size */
+  font-weight: bold;
   color: #e53935; /* your red for X/O */
+  cursor: pointer;
 }
 
 
