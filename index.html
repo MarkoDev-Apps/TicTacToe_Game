@@ -19,7 +19,14 @@
   <div id="game" hidden>
     <div id="board"></div>
     <div id="info">
-      <p id="names"></p>
+      <div class="player-info">
+    <img id="avatarX" src="avatar-x.png" alt="Player X avatar" class="avatar">
+    <span id="namesX"></span>
+  </div>
+  <div class="player-info">
+    <img id="avatarO" src="avatar-o.png" alt="Player O avatar" class="avatar">
+    <span id="namesO"></span>
+  </div>
       <p id="turn"></p>
       <p id="scores"></p>
     </div>
@@ -29,6 +36,7 @@
 
   <canvas id="overlay"></canvas>
   <script src="script.js"></script>
+<audio id="winSound" src="win.mp3" preload="auto"></audio>
 </body>
 </html>
 

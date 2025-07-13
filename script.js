@@ -17,10 +17,23 @@ window.onkeydown = (e) => {
 function startGame() {
   p1 = document.getElementById("p1").value.trim() || "Player X";
   p2 = document.getElementById("p2").value.trim() || "Player O";
+
+  // Hide entry screen, show game
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
-  overlay.width = boardEl.offsetWidth;
-  overlay.height = boardEl.offsetHeight + 100; // Add extra space below board
+
+  // Set board overlay size
+  overlay.width = boardEL.offsetWidth;
+  overlay.height = boardEL.offsetHeight + 100;
+
+  // Set names in UI
+  document.getElementById("namesX").textContent = p1;
+  document.getElementById("namesO").textContent = p2;
+
+  // Optional: You could also dynamically set avatar images here
+  // document.getElementById("avatarX").src = "custom-avatar-x.png";
+  // document.getElementById("avatarO").src = "custom-avatar-o.png";
+
   buildBoard();
   updateInfo();
 }
@@ -42,8 +55,8 @@ function buildBoard() {
 
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById("turn").textContent = gameOver ? "" : `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO}`;
+  document.getElementById('turn').textContent = `${current === "X" ? p1 : p2}'s turn (${current})`;
+  document.getElementById('scores').textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO}`;
 }
 
 function cellClick(e) {
@@ -64,6 +77,8 @@ if (scoreX === 3 || scoreO === 3) {
   return;
 }
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    document.getElementById("winSound").play();
+
     drawWinLine(winCombo);
     animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
   } else if (board.every(Boolean)) {
@@ -76,9 +91,22 @@ if (scoreX === 3 || scoreO === 3) {
 }
 
 function restart() {
+  board = Array(9).fill(null);
+  gameOver = false;
+  current = "X";
+
+  if (overlay) ctx.clearRect(0, 0, overlay.width, overlay.height);
+
   buildBoard();
   updateInfo();
+  winMessageEl.textContent = "";
 }
+
+function resetToStart() {
+  document.getElementById('game').hidden = true;
+  document.getElementById('name-entry').hidden = false;
+}
+
 
 function checkWin(player) {
   const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
