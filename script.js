@@ -18,25 +18,21 @@ function startGame() {
   p1 = document.getElementById("p1").value.trim() || "Player X";
   p2 = document.getElementById("p2").value.trim() || "Player O";
 
-  // Hide entry screen, show game
+  // Hide the name entry form
   document.getElementById("name-entry").hidden = true;
+
+  // Show the game board
   document.getElementById("game").hidden = false;
 
-  // Set board overlay size
+  // Set up canvas
   overlay.width = boardEL.offsetWidth;
   overlay.height = boardEL.offsetHeight + 100;
 
-  // Set names in UI
-  document.getElementById("namesX").textContent = p1;
-  document.getElementById("namesO").textContent = p2;
-
-  // Optional: You could also dynamically set avatar images here
-  // document.getElementById("avatarX").src = "custom-avatar-x.png";
-  // document.getElementById("avatarO").src = "custom-avatar-o.png";
-
+  // Initialize the board
   buildBoard();
   updateInfo();
 }
+
 
 function buildBoard() {
   board = Array(9).fill(null);
