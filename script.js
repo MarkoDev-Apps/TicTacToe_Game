@@ -91,15 +91,8 @@ if (scoreX === 3 || scoreO === 3) {
 }
 
 function restart() {
-  board = Array(9).fill(null);
-  gameOver = false;
-  current = "X";
-
-  if (overlay) ctx.clearRect(0, 0, overlay.width, overlay.height);
-
   buildBoard();
   updateInfo();
-  winMessageEl.textContent = "";
 }
 
 function resetToStart() {
