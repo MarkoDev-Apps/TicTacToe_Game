@@ -82,18 +82,26 @@ function drawWinLine(combo) {
     boardEl.children[i].getBoundingClientRect()
   );
   const boardRect = boardEl.getBoundingClientRect();
-  const [startCell, , endCell] = rects;
   const getCenter = rect => ({
   x: rect.left + rect.width / 2 - boardRect.left,
   y: rect.top + rect.height / 2 - boardRect.top
 });
-const { x: startX, y: startY } = getCenter(startCell);
-const { x: endX, y: endY } = getCenter(endCell);
-
+// Get all 3 centers
+const centers = rects.map(getCenter);
+// Use first and last center
+const start = centers[0];
+const end = centers[2];
+// Optionally extend line slightly outward from the win line
+const dx = end.x - start.x;
+const dy = end.y - start.y;
+const offsetFactor = 0.15; // Tweak this as needed
+const startX = start.x - dx * offsetFactor;
+const startY = start.y - dy * offsetFactor;
+const endX = end.x + dx * offsetFactor;
+const endY = end.y + dy * offsetFactor;
   // Animation variables
   const totalSteps = 20;
   let step = 0;
-
   const draw = () => {
     const t = step / totalSteps;
     const currentX = startX + (endX - startX) * t;
