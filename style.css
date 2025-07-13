@@ -12,6 +12,15 @@ body {
   margin-top: 30px;
 }
 
+#name-entry h2 {
+  font-size: 28px;       /* Increase text size */
+  font-weight: bold;     /* Make it bold */
+  color: #ffffff;        /* Ensure visibility on dark backgrounds */
+  text-align: center;    /* Optional: center-align the heading */
+  margin-bottom: 16px;
+}
+
+
 #board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -83,6 +92,30 @@ button {
   50% { transform: translateX(0%); opacity: 1; }
   100% { transform: translateX(100%); opacity: 0; }
 }
+
+#welcome-msg {
+  text-align: center;
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 20px;
+  animation: welcomeBounce 1.8s ease-in-out;
+}
+
+@keyframes welcomeBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 
 
 
