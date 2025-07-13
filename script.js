@@ -16,7 +16,7 @@ function startGame() {
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
   overlay.width = boardEl.offsetWidth;
-  overlay.height = boardEl.offsetHeight;
+  overlay.height = boardEl.offsetHeight + 80;
   buildBoard();
   updateInfo();
 }
@@ -99,7 +99,7 @@ function animateWin(text) {
     ctx.font = font;
     ctx.fillStyle = `rgba(255,255,255,${alpha})`;
     ctx.textAlign = "center";
-    ctx.fillText(text, overlay.width / 2, overlay.height - 15);
+    ctx.fillText(text, overlay.width / 2, overlay.height + 40);
 
     alpha += fadeIn ? 0.05 : -0.05;
     if (alpha >= maxAlpha) fadeIn = false;
