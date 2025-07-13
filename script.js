@@ -16,7 +16,7 @@ function startGame() {
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
   overlay.width = boardEl.offsetWidth;
-  overlay.height = boardEl.offsetHeight + 80;
+  overlay.height = boardEl.offsetHeight + 100; // Add extra space below board
   buildBoard();
   updateInfo();
 }
@@ -95,11 +95,11 @@ function animateWin(text) {
   let start = Date.now();
 
   const anim = setInterval(() => {
-    ctx.clearRect(0, overlay.height - 40, overlay.width, 40);
+    ctx.clearRect(0, overlay.height - 60, overlay.width, 50);
     ctx.font = font;
     ctx.fillStyle = `rgba(255,255,255,${alpha})`;
     ctx.textAlign = "center";
-    ctx.fillText(text, overlay.width / 2, overlay.height + 40);
+    ctx.fillText(text, overlay.width / 2, overlay.height - 20);
 
     alpha += fadeIn ? 0.05 : -0.05;
     if (alpha >= maxAlpha) fadeIn = false;

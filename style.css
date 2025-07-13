@@ -56,14 +56,14 @@ button {
 
 #overlay {
   position: absolute;
-  height: calc(100% + 80px); /* makes room for text below */
   top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 90vw;
   max-width: 450px;
-  aspect-ratio: 1 / 1;
+  height: calc(100% + 100px); /* Added space for win message */
   pointer-events: none;
 }
+
 
 
