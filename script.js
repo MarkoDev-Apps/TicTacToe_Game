@@ -15,8 +15,16 @@ window.onkeydown = (e) => {
 };
 
 function startGame() {
-  p1 = document.getElementById("p1").value.trim() || "Player X";
-  p2 = document.getElementById("p2").value.trim() || "Player O";
+  p1 = document.getElementById("p1").value.trim();
+  p2 = document.getElementById("p2").value.trim();
+
+  if (!p1Name || !p2Name) {
+    alert("Please enter names for both Player 1 and Player 2.");
+    return;
+  }
+
+  p1 = p1Name;
+  p2 = p2Name;
 
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;

@@ -10,8 +10,8 @@
 <body>
   <div id="name-entry">
     <h2>Enter Player Names</h2>
-    <input id="p1" placeholder="Player X name" maxlength="15" />
-    <input id="p2" placeholder="Player O name" maxlength="15" />
+    <input id="p1" placeholder="Player 1 name" maxlength="15" required />
+    <input id="p2" placeholder="Player 2 name" maxlength="15" required />
     <button id="startBtn">Start Game</button>
     <p id="welcome-msg">Welcome to TicTacToe Game 🎮</p>
   </div>
@@ -30,6 +30,9 @@
   <canvas id="overlay"></canvas>
   <script src="script.js"></script>
 <audio id="winSound" src="win.mp3" preload="auto"></audio>
+<footer id="footer">
+  &copy; 2025 Marko TicTacToe Game. All rights reserved.
+</footer>
 </body>
 </html>
 
