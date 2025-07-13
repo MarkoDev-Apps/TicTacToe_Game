@@ -66,14 +66,21 @@ button {
 }
 .fade-text {
   color: white;
-  font-size: 40px;
-  font-weight; bold;
+  font-size: 28px;
+  font-weight: bold;
   margin-top: 15px;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  animation: bounce-horizontal 3s ease-in-out forwards;
 }
+
 .fade-text.visible {
   opacity: 1;
+}
+
+@keyframes bounce-horizontal {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { transform: translateX(0%); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
 }
 
 

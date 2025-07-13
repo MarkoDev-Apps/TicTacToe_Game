@@ -95,12 +95,17 @@ function drawWinLine(combo) {
 function animateWin(text) {
   const msgEl = document.getElementById("winMessage");
   msgEl.textContent = `🏆 ${text} 🏆`;
-  msgEl.classList.add("visible");
+
+  // Force reflow to restart animation
+  msgEl.classList.remove("fade-text");
+  void msgEl.offsetWidth; // trigger reflow
+  msgEl.classList.add("fade-text");
 
   setTimeout(() => {
-    msgEl.classList.remove("visible");
+    msgEl.classList.remove("fade-text");
     msgEl.textContent = "";
     updateInfo();
-  }, 4000);
+  }, 3000);
 }
+
 
