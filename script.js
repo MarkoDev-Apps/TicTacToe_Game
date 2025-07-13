@@ -91,10 +91,14 @@ function drawWinLine(combo) {
   const boardRect = boardEL.getBoundingClientRect();
   const [startCell, , endCell] = rects;
 
-  const getCenter = rect => ({
-    x: rect.left + rect.width / 2 - boardRect.left,
-    y: rect.top + rect.height / 2 - boardRect.top
-  });
+  const getCenter = rect => {
+  const scale = 0.35; // smaller value = shorter line
+  return {
+    x: rect.left + rect.width * scale + rect.width * (1 - 2 * scale) / 2 - boardRect.left,
+    y: rect.top + rect.height * scale + rect.height * (1 - 2 * scale) / 2 - boardRect.top
+  };
+};
+
 
   const { x: startX, y: startY } = getCenter(startCell);
   const { x: endX, y: endY } = getCenter(endCell);
