@@ -84,7 +84,7 @@ function drawWinLine(combo) {
   const endX = end.left + end.width/2 - boardEl.getBoundingClientRect().left;
   const endY = end.top + end.height/2 - boardEl.getBoundingClientRect().top;
 
-  ctx.strokeStyle = "#ffffff";
+  ctx.strokeStyle = "#000000";  // black
   ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.moveTo(startX, startY);

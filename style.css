@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: sans-serif;
-  background: #1caa9c;
+  background: #212121;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,6 +24,7 @@ body {
 
 .cell {
   font-size: 6vw;
+  color: #e53935;
   max-font-size: 60px;
   background-color: #f0f0f0;
   display: flex;
