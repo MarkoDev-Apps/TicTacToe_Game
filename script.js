@@ -47,6 +47,7 @@ function updateInfo() {
 }
 
 function cellClick(e) {
+if (gameOver || board[i]) return;
   const i = e.target.dataset.i;
   if (gameOver || board[i]) return;
   board[i] = current;
