@@ -1,15 +1,38 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #1caaa...
+}
 #board {
   display: grid;
-  grid-template-columns: repeat(3, 100px);
-  gap: 5px;
+  width: 450px; height: 450px;
+  grid-template: repeat(3, 1fr)/repeat(3, 1fr);
+  border: 6px solid #179187;
+  background: #1ba59c;
+  margin: 20px auto;
+  position: relative;
 }
 .cell {
-  width: 100px;
-  height: 100px;
-  background: #eee;
-  font-size: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
+  border: 3px solid #179187;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 3rem; cursor: pointer;
 }
+#info {
+  text-align: center;
+  color: white;
+  margin-bottom: 10px;
+}
+#name-entry, #game {
+  text-align: center;
+  margin-top: 30px;
+}
+input { padding: 8px; margin: 5px; font-size: 1rem; }
+button { padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+#overlay {
+  position: absolute;
+  top:0; left:50%;
+  transform: translateX(-50%);
+  width:450px; height:555px;
+  pointer-events: none;
+}
+

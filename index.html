@@ -7,15 +7,22 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Tic Tac Toe</h1>
-  <div id="board">
-    <!-- 9 cells -->
-    <div class="cell" data-index="0"></div>
-    <div class="cell" data-index="1"></div>
-    <!-- ... up to index="8" -->
+  <div id="name-entry">
+    <h2>Enter Player Names</h2>
+    <input id="p1" placeholder="Player X name" maxlength="15" />
+    <input id="p2" placeholder="Player O name" maxlength="15" />
+    <button id="startBtn">Start Game</button>
   </div>
-  <p id="status">X's turn</p>
-  <button id="reset">Restart</button>
+  <div id="game" hidden>
+    <div id="board"></div>
+    <div id="info">
+      <p id="names"></p>
+      <p id="turn"></p>
+    </div>
+    <button id="resetBtn">Restart (R)</button>
+  </div>
+  <canvas id="overlay"></canvas>
   <script src="script.js"></script>
 </body>
 </html>
+
