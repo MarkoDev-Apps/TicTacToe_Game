@@ -95,11 +95,11 @@ button {
 
 #welcome-msg {
   text-align: center;
-  font-size: 26px;
+  font-size: 36px;
   font-weight: bold;
   color: #ffffff;
   margin-top: 20px;
-  animation: welcomeBounce 1.8s ease-in-out;
+  animation: welcomeBounce 3s ease-in-out;
 }
 
 @keyframes welcomeBounce {

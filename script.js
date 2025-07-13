@@ -82,11 +82,11 @@ function drawWinLine(combo) {
     boardEl.children[i].getBoundingClientRect()
   );
   const boardRect = boardEl.getBoundingClientRect();
-  const start = rects[0], end = rects[2];
-  const startX = start.left + start.width/2 - boardRect.left;
-  const startY = start.top + start.height/2 - boardRect.top;
-  const endX = end.left + end.width/2 - boardRect.left;
-  const endY = end.top + end.height/2 - boardRect.top;
+  const [startCell, , endCell] = rects;
+  const startX = startCell.left + startCell.width / 2 - boardRect.left;
+  const startY = startCell.top + startCell.height / 2 - boardRect.top;
+  const endX = endCell.left + endCell.width / 2 - boardRect.left;
+  const endY = endCell.top + endCell.height / 2 - boardRect.top;
 
   // Animation variables
   const totalSteps = 20;
@@ -110,7 +110,6 @@ function drawWinLine(combo) {
       requestAnimationFrame(draw);
     }
   };
-
   draw();
 }
 
