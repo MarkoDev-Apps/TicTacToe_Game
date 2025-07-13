@@ -93,6 +93,7 @@ button {
   max-width: 450px;
   height: calc(100% + 100px); /* Added space for win message */
   pointer-events: none;
+  display: none;
 }
 .fade-text {
   color: white;

@@ -18,20 +18,20 @@ function startGame() {
   p1 = document.getElementById("p1").value.trim() || "Player X";
   p2 = document.getElementById("p2").value.trim() || "Player O";
 
-  // Hide the name entry form
   document.getElementById("name-entry").hidden = true;
-
-  // Show the game board
   document.getElementById("game").hidden = false;
 
-  // Set up canvas
-  overlay.width = boardEL.offsetWidth;
-  overlay.height = boardEL.offsetHeight + 100;
+  buildBoard();      // First, build the board
+  updateInfo();      // Then, update scores/names
 
-  // Initialize the board
-  buildBoard();
-  updateInfo();
+  // Delay overlay resizing just slightly
+  setTimeout(() => {
+    overlay.width = boardEL.offsetWidth;
+    overlay.height = boardEL.offsetHeight + 100;
+    overlay.style.display = 'none'; // Hide initially
+  }, 0); // 0 ms lets the DOM update first
 }
+
 
 
 function buildBoard() {
