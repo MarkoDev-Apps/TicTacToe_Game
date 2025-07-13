@@ -8,7 +8,11 @@ let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
 
 document.getElementById("startBtn").onclick = startGame;
 document.getElementById("resetBtn").onclick = restart;
-window.onkeydown = (e) => e.key === "r" && restart();
+window.onkeydown = (e) => {
+  if (document.activeElement.tagName !== "INPUT" && e.key.toLowerCase() === "r") {
+    restart();
+  }
+};
 
 function startGame() {
   p1 = document.getElementById("p1").value.trim() || "Player X";
@@ -89,23 +93,14 @@ function drawWinLine(combo) {
 }
 
 function animateWin(text) {
-  const font = "28px sans-serif";
-  let alpha = 0, fadeIn = true;
-  const maxAlpha = 1;
-  let start = Date.now();
+  const msgEl = document.getElementById("winMessage");
+  msgEl.textContent = text;
+  msgEl.classList.add("visible");
 
-  const anim = setInterval(() => {
-    ctx.clearRect(0, overlay.height - 60, overlay.width, 50);
-    ctx.font = font;
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.textAlign = "center";
-    ctx.fillText(text, overlay.width / 2, overlay.height - 20);
-
-    alpha += fadeIn ? 0.05 : -0.05;
-    if (alpha >= maxAlpha) fadeIn = false;
-    if (alpha <= 0 && !fadeIn) {
-      clearInterval(anim);
-      updateInfo();
-    }
-  }, 50);
+  setTimeout(() => {
+    msgEl.classList.remove("visible");
+    msgEl.textContent = "";
+    updateInfo();
+  }, 3000);
 }
+

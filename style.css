@@ -64,6 +64,17 @@ button {
   height: calc(100% + 100px); /* Added space for win message */
   pointer-events: none;
 }
+.fade-text {
+  color: white;
+  font-size: 20px;
+  margin-top: 15px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+.fade-text.visible {
+  opacity: 1;
+}
+
 
 
 
