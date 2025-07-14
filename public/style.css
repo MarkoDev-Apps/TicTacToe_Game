@@ -16,13 +16,12 @@ body {
 }
 
 #name-entry h2 {
-  font-size: 28px;       /* Increase text size */
-  font-weight: bold;     /* Make it bold */
-  color: #ffffff;        /* Ensure visibility on dark backgrounds */
-  text-align: center;    /* Optional: center-align the heading */
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
   margin-bottom: 16px;
 }
-
 
 #board {
   display: grid;
@@ -32,23 +31,21 @@ body {
   max-width: 450px;
   aspect-ratio: 1 / 1;
   background-color: #000000;
-  margin: 0 auto; /* centers the board */
+  margin: 0 auto;
   touch-action: manipulation;
 }
 
-
 #board div {
   background-color: #fff;
-  border: 2px solid black; /* ✅ Change this from teal to black */
+  border: 2px solid black;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: clamp(2rem, 8vw, 5rem);
   font-weight: bold;
-  color: #e53935; /* your red for X/O */
+  color: #e53935;
   cursor: pointer;
 }
-
 
 .cell {
   font-size: 6vw;
@@ -65,14 +62,13 @@ body {
 
 .cell:active {
   transform: scale(0.95);
-  background-color: #ddd; /* subtle feedback */
+  background-color: #ddd;
 }
 
 .cell.filled {
   cursor: default;
   pointer-events: none;
 }
-
 
 #info {
   color: white;
@@ -96,6 +92,41 @@ button {
   cursor: pointer;
 }
 
+/* New: Mobile-friendly, centered radio buttons */
+#mode-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+#mode-select label {
+  cursor: pointer;
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+/* New: Improved button appearance */
+#startBtn {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: none;
+  border-radius: 24px;
+  background-color: #f0f0f0;
+  color: #007bff;
+  cursor: pointer;
+  width: 90%;
+  max-width: 300px;
+  margin-top: 10px;
+}
+
+#startBtn:hover {
+  background-color: #e0e0e0;
+}
 
 #overlay {
   position: absolute;
@@ -104,10 +135,11 @@ button {
   transform: translateX(-50%);
   width: 90vw;
   max-width: 450px;
-  height: calc(100% + 100px); /* Added space for win message */
+  height: calc(100% + 100px);
   pointer-events: none;
   display: none;
 }
+
 .fade-text {
   color: white;
   font-size: 28px;
@@ -156,12 +188,11 @@ button {
     font-size: 14px;
   }
 
-    #name-entry,
-  #game {
+  #name-entry, #game {
     width: 100%;
   }
 
-    #scores, #turn, #names {
+  #scores, #turn, #names {
     text-align: center;
   }
 
@@ -178,7 +209,6 @@ button {
   }
 }
 
-
 #footer {
   position: fixed;
   bottom: 10px;
@@ -193,22 +223,3 @@ button {
 input:invalid {
   border: 2px solid red;
 }
-
-#mode-select {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-#mode-select label {
-  cursor: pointer;
-  font-weight: 500;
-}
-
-
-
-
-
-
-
-
