@@ -71,8 +71,9 @@ function startGame() {
 
 /* ========== finalize start UI ========== */
 function finalizeStart() {
-  document.getElementById("mode-entry").hidden = true;
+  document.getElementById("mode-entry").style.display = "none";
   document.getElementById("name-entry").hidden = true;
+  document.getElementById("wait-msg").hidden = true;
   document.getElementById("game").hidden = false;
   buildBoard();
   updateInfo();
@@ -107,7 +108,13 @@ function buildBoard() {
 function cellClick(e) {
   const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
-  socket.emit('make‑move', { index: i, player: current, roomId });
+
+  if (mode === "single") {
+    applyMove({ index: i, player: current });
+    if (!gameOver) setTimeout(cpuMove, 800);  // wait before CPU responds
+  } else {
+    socket.emit('make-move', { index: i, player: current, roomId });
+  }
 }
 
 /* ========== apply moves ========== */
@@ -154,14 +161,35 @@ function applyMove({ index, player }) {
   }
 }
 
-/* ========== CPU move ========== */
+/* ========== CPU smart move ========== */
 function cpuMove() {
-  const available = board
-    .map((v,i) => (v===null ? i : null))
-    .filter(i => i !== null);
-  if (!available.length) return;
-  const idx = available[Math.floor(Math.random() * available.length)];
-  socket.emit('make‑move', { index: idx, player: "O", roomId });
+  // 1) Try to win
+  const winner = findBestMove("O");
+  if (winner !== null) return applyMove({ index: winner, player: "O" });
+
+  // 2) Block player
+  const block = findBestMove("X");
+  if (block !== null) return applyMove({ index: block, player: "O" });
+
+  // 3) Random fallback
+  const avail = board.map((v,i)=>v===null?i:null).filter(v=>v!==null);
+  const idx = avail[Math.floor(Math.random()*avail.length)];
+  if (idx!==undefined) applyMove({ index: idx, player: "O" });
+}
+
+function findBestMove(p) {
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8],[0,3,6],
+    [1,4,7],[2,5,8],[0,4,8],[2,4,6]
+  ];
+  return wins.reduce((best, combo) => {
+    const marks = combo.map(i => board[i]);
+    if (marks.filter(v => v === p).length === 2 && marks.filter(v => !v).length === 1) {
+      const idx = combo[marks.indexOf(null)];
+      return (best === null) ? idx : best;
+    }
+    return best;
+  }, null);
 }
 
 /* ========== UI + logic ========== */
