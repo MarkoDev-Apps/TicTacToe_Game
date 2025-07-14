@@ -136,7 +136,11 @@ function applyMove({ index, player }) {
   const winCombo = checkWin(player);
   if (winCombo) {
     gameOver = true;
-    (player === "X" ? scoreX : scoreO)++;
+    if (player === "X") {
+  scoreX++;
+} else {
+  scoreO++;
+}
     try { winSound.play(); } catch {}
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     drawWinLine(winCombo);
