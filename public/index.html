@@ -9,11 +9,16 @@
 </head>
 <body>
 
-<div id="mode-entry">
-    <input type="radio" name="mode" id="mode-sp" value="single" checked>
-    <label for="mode-sp">Single Player</label>
-    <input type="radio" name="mode" id="mode-mp" value="multi">
-    <label for="mode-mp">Multiplayer</label>
+  <!-- ✅ Game Mode Selection -->
+  <div id="mode-entry">
+    <label class="toggle-option">
+      <input type="radio" name="mode" id="mode-sp" value="single">
+      Single Player
+    </label>
+    <label class="toggle-option">
+      <input type="radio" name="mode" id="mode-mp" value="multi">
+      Multiplayer
+    </label>
   </div>
 
   <div id="name-entry">
@@ -21,19 +26,19 @@
     <input id="p1" placeholder="Player 1 name" maxlength="15" required />
     <input id="p2" placeholder="Player 2 name" maxlength="15" required />
 
-    <!-- ✅ Game Mode Selector -->
-    <div id="mode-select" style="margin-bottom: 10px;">
-      <label>
-        <input type="radio" name="mode" value="3" checked>
+    <!-- ✅ Win Condition Selection -->
+    <div id="mode-select">
+      <label class="checkbox-option">
+        <input type="radio" name="modeWin" value="3">
         First to 3 Wins
       </label>
-      <label style="margin-left: 15px;">
-        <input type="radio" name="mode" value="5">
+      <label class="checkbox-option">
+        <input type="radio" name="modeWin" value="5">
         First to 5 Wins
       </label>
     </div>
 
-    <button id="startBtn">Start Game</button>
+    <button id="startBtn"><strong>Start Game</strong></button>
     <p id="wait-msg" hidden>Waiting for Player 2 to join...</p>
     <p id="welcome-msg">Welcome to TicTacToe Game 🎮</p>
   </div>

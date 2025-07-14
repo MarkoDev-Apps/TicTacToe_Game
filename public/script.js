@@ -11,11 +11,12 @@ let current = "X", gameOver = false;
 let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
 let roomId = "";
 let gameMode = 3;
-let mode = "single";
+let mode = "";
 const cpuName = "CPU";
 
 /* ========== on DOM load ========== */
 document.addEventListener("DOMContentLoaded", () => {
+  // Show/hide P2 on mode change
   document.querySelectorAll('input[name="mode"]').forEach(r =>
     r.addEventListener("change", () => {
       mode = r.value;
@@ -24,33 +25,38 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = () => socket.emit('restart-round', { roomId });
+  document.getElementById("resetBtn").onclick = () => socket.emit('restart‑round', { roomId });
   window.addEventListener("keydown", e => {
-    if (e.key.toLowerCase() === "r") socket.emit('restart-round', { roomId });
+    if (e.key.toLowerCase() === "r") socket.emit('restart‑round', { roomId });
   });
 
-  /* ========== Socket listeners ========== */
-  socket.on('join-success', () => {
-    socket.emit('player-ready', { roomId, name: document.getElementById("p2").value.trim() });
+  socket.on('join‑success', () => {
+    socket.emit('player‑ready', {
+      roomId,
+      name: document.getElementById("p2").value.trim()
+    });
   });
 
-  socket.on('both-ready', ({p2name}) => {
+  socket.on('both‑ready', ({ p2name }) => {
     p2 = p2name;
     finalizeStart();
   });
 
-  socket.on('make-move', applyMove);
-  socket.on('restart-round', resetRound);
+  socket.on('make‑move', applyMove);
+  socket.on('restart‑round', resetRound);
 });
 
 /* ========== initialize game on click ========== */
 function startGame() {
   p1 = document.getElementById("p1").value.trim();
   p2 = document.getElementById("p2").value.trim();
-  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked').value || "3");
+  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked')?.value || "");
 
+  // ✅ Mandatory checks
+  if (!mode) return alert("Choose single or multiplayer mode.");
+  if (!gameMode) return alert("Choose first‑to‑3 or first‑to‑5.");
   if (!p1 || (mode === "multi" && !p2)) {
-    return alert("Please enter required player names.");
+    return alert("Please enter the required player names.");
   }
 
   if (mode === "single") {
@@ -59,7 +65,7 @@ function startGame() {
   } else {
     roomId = prompt("Enter a room name (for multiplayer):");
     if (!roomId) return alert("A room name is required for multiplayer.");
-    socket.emit('join-room', roomId);
+    socket.emit('join‑room', roomId);
   }
 }
 
@@ -73,7 +79,7 @@ function finalizeStart() {
   overlaySetup();
 }
 
-/* ========== board setup ========== */
+/* ========== overlay + board ========== */
 function overlaySetup() {
   setTimeout(() => {
     overlay.width = boardEl.offsetWidth;
@@ -101,10 +107,10 @@ function buildBoard() {
 function cellClick(e) {
   const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
-  socket.emit('make-move', { index: i, player: current, roomId });
+  socket.emit('make‑move', { index: i, player: current, roomId });
 }
 
-/* ========== apply moves (local or remote) ========== */
+/* ========== apply moves ========== */
 function applyMove({ index, player }) {
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
@@ -143,53 +149,52 @@ function applyMove({ index, player }) {
   current = current === "X" ? "O" : "X";
   updateInfo();
 
-  if (mode === "single" && current === "O") setTimeout(cpuMove, 300);
+  if (mode === "single" && current === "O") {
+    setTimeout(cpuMove, 300);
+  }
 }
 
 /* ========== CPU move ========== */
 function cpuMove() {
-  const available = board.map((v, i) => v ? null : i).filter(v => v !== null);
+  const available = board
+    .map((v,i) => (v===null ? i : null))
+    .filter(i => i !== null);
   if (!available.length) return;
   const idx = available[Math.floor(Math.random() * available.length)];
-  socket.emit('make-move', { index: idx, player: "O", roomId });
+  socket.emit('make‑move', { index: idx, player: "O", roomId });
 }
 
-/* ========== helper UI + logic ========== */
+/* ========== UI + logic ========== */
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
   document.getElementById("turn").textContent = gameOver ?
     "Game Over" : `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
+  document.getElementById("scores").textContent =
+    `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
 }
 
 function checkWin(p) {
-  const wins = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   return wins.find(c => c.every(i => board[i] === p));
 }
 
 function drawWinLine(combo) {
   const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
   const boardRect = boardEl.getBoundingClientRect();
-  const [ac, , bc] = rects;
-  const getCenter = r => {
-    const scale = 0.35;
-    return {
-      x: r.left + r.width * scale + r.width * (1 - 2 * scale) / 2 - boardRect.left,
-      y: r.top + r.height * scale + r.height * (1 - 2 * scale) / 2 - boardRect.top
-    };
-  };
-  const { x: sx, y: sy } = getCenter(ac);
-  const { x: ex, y: ey } = getCenter(bc);
-  const shorten = 0.85,
-        dx = ex - sx,
-        dy = ey - sy,
-        sX = sx + dx*(1-shorten)/2,
-        sY = sy + dy*(1-shorten)/2,
-        eX = ex - dx*(1-shorten)/2,
-        eY = ey - dy*(1-shorten)/2;
+  const [ac,, bc] = rects;
+  const getCenter = r => ({
+    x: r.left + r.width*0.35 + r.width*(1-0.7)/2 - boardRect.left,
+    y: r.top + r.height*0.35 + r.height*(1-0.7)/2 - boardRect.top
+  });
+
+  const {x: sx, y: sy} = getCenter(ac);
+  const {x: ex, y: ey} = getCenter(bc);
+  const dx = ex - sx, dy = ey - sy;
+  const sX = sx + dx*0.075, sY = sy + dy*0.075;
+  const eX = ex - dx*0.075, eY = ey - dy*0.075;
 
   let t = 0, steps = 20;
-  const interval = () => {
+  const animateLine = () => {
     const pct = t/steps;
     const cX = sX + (eX - sX)*pct;
     const cY = sY + (eY - sY)*pct;
@@ -197,12 +202,12 @@ function drawWinLine(combo) {
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(sX, sY);
-    ctx.lineTo(cX, cY);
+    ctx.moveTo(sX,sY);
+    ctx.lineTo(cX,cY);
     ctx.stroke();
-    if (t++ < steps) requestAnimationFrame(interval);
+    if (t++ < steps) requestAnimationFrame(animateLine);
   };
-  interval();
+  animateLine();
 }
 
 function animateWin(msg) {
