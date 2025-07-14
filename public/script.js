@@ -14,86 +14,92 @@ let gameMode = 3;
 let mode = "single";
 const cpuName = "CPU";
 
-/* ========== on DOM load ========== */
+/* ========== DOM load ========== */
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll('input[name="mode"]').forEach(r =>
-    r.addEventListener("change", () => {
-      mode = r.value;
+  [...document.querySelectorAll('input[name="mode"]')].forEach(radio =>
+    radio.addEventListener("change", e => {
+      mode = e.target.value;
       document.getElementById("p2").hidden = mode === "single";
     })
   );
 
+  [...document.querySelectorAll('button[class$="-btn"]')].forEach(btn =>
+    btn.addEventListener("click", () => {
+      const group = btn.className;
+      const others = document.querySelectorAll(`.${group}`);
+      others.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    })
+  );
+
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = () => socket.emit('restart-round', { roomId });
+  document.getElementById("resetBtn").onclick = () =>
+    socket.emit('restart-round', { roomId });
   window.addEventListener("keydown", e => {
-    if (e.key.toLowerCase() === "r") socket.emit('restart-round', { roomId });
+    if (e.key.toLowerCase() === "r") {
+      socket.emit('restart-round', { roomId });
+    }
   });
 
-  socket.on('player-ready', () => {
-    // once other player joins, this client waits
-    document.getElementById("wait-msg").hidden = false;
-  });
-
-socket.on('join-success', () => {
-  socket.emit('player-ready', {
-    roomId,
-    name: document.getElementById("p2").value.trim()
-  });
-});
-
-  socket.on('both-ready', ({ p2name }) => {
-    p2 = p2name;
-    finalizeStart();
-  });
-
+  socket.on('both-joined', finalizeStart);
   socket.on('make-move', applyMove);
   socket.on('restart-round', resetRound);
 });
 
-/* ========== initialize game on click ========== */
+/* ========== start logic ========== */
 function startGame() {
   p1 = document.getElementById("p1").value.trim();
   p2 = document.getElementById("p2").value.trim();
-  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked').value || "3");
+  const winBtn = document.querySelector('.round-btn.selected');
+  const modeBtn = document.querySelector('.mode-btn.selected');
 
   if (!p1 || (mode === "multi" && !p2)) {
-    return alert("Please enter required player names.");
+    return alert("Please fill required name(s).");
   }
+  if (!winBtn || !modeBtn) {
+    return alert("Please choose game mode and winning condition.");
+  }
+
+  gameMode = parseInt(winBtn.dataset.value);
+  mode = modeBtn.dataset.value;
 
   if (mode === "single") {
     p2 = cpuName;
     finalizeStart();
   } else {
-    // multiplayer path
-    if (!roomId) {
-      roomId = prompt("Enter a room name (for multiplayer):");
-      if (!roomId) return alert("A room name is required for multiplayer.");
-      socket.emit('join-room', { roomId, name: p1 });
-      document.getElementById("wait-msg").hidden = false;
-    }
+    roomId = prompt("Enter a room name (for multiplayer):");
+    if (!roomId) return alert("Room is required.");
+    socket.emit('join', roomId);
+    document.getElementById("wait-msg").hidden = false;
+    document.getElementById("startBtn").disabled = true;
   }
 }
 
-/* ========== finalize start UI ========== */
+/* ========== UI init ========== */
 function finalizeStart() {
-  // document.getElementById("mode-entry").hidden = true;
   document.getElementById("mode-entry").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
+  document.getElementById("wait-msg").hidden = true;
+  document.getElementById("startBtn").disabled = false;
+
   buildBoard();
   updateInfo();
-  setTimeout(() => {
-    overlay.width = boardEl.offsetWidth;
-    overlay.height = boardEl.offsetHeight + 100;
-    overlay.style.display = 'none';
-  }, 0);
+  overlaySetup();
+
+  if (mode === "single" && current === "O") {
+    setTimeout(cpuMove, 3000);
+  }
 }
 
-/* ========== board setup ========== */
+/* ========== setup board ========== */
 function buildBoard() {
-  board = Array(9).fill(null);
-  current = "X"; gameOver = false;
+  board.fill(null);
+  current = "X";
+  gameOver = false;
   boardEl.innerHTML = "";
+  ctx.clearRect(0, 0, overlay.width, overlay.height);
+
   board.forEach((_, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
@@ -108,22 +114,19 @@ function cellClick(e) {
   const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
 
-  // Only let the human trigger a move
   if (mode === "single" && current === "X") {
     socket.emit('make-move', { index: i, player: "X", roomId });
   }
-
   if (mode === "multi") {
     socket.emit('make-move', { index: i, player: current, roomId });
   }
 }
 
-
-/* ========== apply moves ========== */
+/* ========== apply move (from either socket or local) ========== */
 function applyMove({ index, player }) {
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
-  if (cell) { cell.textContent = player; cell.classList.add('filled'); }
+  if (cell) cell.textContent = player;
 
   const winCombo = checkWin(player);
   if (winCombo) {
@@ -131,12 +134,15 @@ function applyMove({ index, player }) {
     player === "X" ? scoreX++ : scoreO++;
     try { winSound.play(); } catch {}
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    drawWinLine(winCombo);
     animateWin(`🏆 ${player === "X" ? p1 : p2} wins this round! 🏆`);
+
     if (scoreX >= gameMode || scoreO >= gameMode) {
-      setTimeout(() => { alert(`${player === "X" ? p1 : p2} won the game!`); window.location.reload(); }, 3500);
-    } else setTimeout(resetRound, 5000);
-    return;
+      return setTimeout(() => {
+        alert(`${player === "X" ? p1 : p2} won the game!`);
+        window.location.reload();
+      }, 3500);
+    }
+    return setTimeout(resetRound, 5000);
   }
 
   if (board.every(Boolean)) {
@@ -148,85 +154,53 @@ function applyMove({ index, player }) {
 
   current = current === "X" ? "O" : "X";
   updateInfo();
-  // If it's CPU's turn in single-player, let them play after a short delay
+
+  // CPU turn
   if (mode === "single" && current === "O") {
-  setTimeout(cpuMove, 300);
-}
+    return setTimeout(cpuMove, 3000);
+  }
 }
 
 /* ========== CPU logic ========== */
 function cpuMove() {
   if (gameOver || current !== "O") return;
-  const available = board.map((v, i) => v ? null : i).filter(v => v !== null);
-  const idx = available[Math.floor(Math.random() * available.length)];
-  if (idx !== undefined) {
-    socket.emit('make-move', { index: idx, player: "O", roomId });
-  }
+
+  const open = board.map((v, i) => v ? null : i).filter(i => i != null);
+  const idx = open[Math.floor(Math.random() * open.length)];
+  if (idx == null) return;
+
+  socket.emit('make-move', { index: idx, player: "O", roomId });
 }
 
-function findWinningMove(p) {
-  const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  for (let combo of wins) {
-    const [a,b,c] = combo;
-    const vals = [board[a], board[b], board[c]];
-    if (vals.filter(v => v===p).length === 2 && vals.includes(null)) {
-      return combo[vals.indexOf(null)];
-    }
-  }
-  return null;
-}
-
-/* ========== UI helpers ========== */
+/* ========== UI helpers + logic ========== */
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById("turn").textContent = gameOver ? "Game Over" : `${current=== "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
+  document.getElementById("turn").textContent = gameOver
+    ? "Game Over" : `${current === "X" ? p1 : p2}'s turn (${current})`;
+  document.getElementById("scores").textContent =
+    `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
 }
 
 function checkWin(p) {
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  return wins.find(c=>c.every(i=>board[i]===p));
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6],
+  ];
+  return wins.find(combo => combo.every(i => board[i] === p));
 }
 
-function drawWinLine(combo) {
-  const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
-  const boardRect = boardEl.getBoundingClientRect();
-  const [ac,, bc] = rects;
-  const getCenter = r => ({
-    x: r.left + r.width*0.35 + r.width*(1-0.7)/2 - boardRect.left,
-    y: r.top + r.height*0.35 + r.height*(1-0.7)/2 - boardRect.top
-  });
-
-  const {x: sx, y: sy} = getCenter(ac);
-  const {x: ex, y: ey} = getCenter(bc);
-  const dx = ex - sx, dy = ey - sy;
-  const sX = sx + dx*0.075, sY = sy + dy*0.075;
-  const eX = ex - dx*0.075, eY = ey - dy*0.075;
-
-  let t = 0, steps = 20;
-  const animateLine = () => {
-    const pct = t/steps;
-    const cX = sX + (eX - sX)*pct;
-    const cY = sY + (eY - sY)*pct;
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(sX,sY);
-    ctx.lineTo(cX,cY);
-    ctx.stroke();
-    if (t++ < steps) requestAnimationFrame(animateLine);
-  };
-  animateLine();
+function overlaySetup() {
+  setTimeout(() => {
+    overlay.width = boardEl.offsetWidth;
+    overlay.height = boardEl.offsetHeight + 100;
+    overlay.style.display = 'none';
+  }, 0);
 }
 
 function animateWin(msg) {
   const el = document.getElementById("winMessage");
-  el.textContent = msg;
+  el.textContent = `🏆 ${msg} 🏆`;
   el.classList.remove("fade-text");
   void el.offsetWidth;
   el.classList.add("fade-text");
@@ -238,8 +212,9 @@ function animateWin(msg) {
 }
 
 function resetRound() {
-  board = Array(9).fill(null);
-  current = "X"; gameOver = false;
+  board.fill(null);
+  current = "X";
+  gameOver = false;
   buildBoard();
   updateInfo();
 }
