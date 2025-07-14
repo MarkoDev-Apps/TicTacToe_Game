@@ -11,12 +11,11 @@ let current = "X", gameOver = false;
 let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
 let roomId = "";
 let gameMode = 3;
-let mode = "";
+let mode = "single";
 const cpuName = "CPU";
 
 /* ========== on DOM load ========== */
 document.addEventListener("DOMContentLoaded", () => {
-  // Show/hide P2 on mode change
   document.querySelectorAll('input[name="mode"]').forEach(r =>
     r.addEventListener("change", () => {
       mode = r.value;
@@ -25,25 +24,23 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = () => socket.emit('restart‑round', { roomId });
+  document.getElementById("resetBtn").onclick = () => socket.emit('restart-round', { roomId });
   window.addEventListener("keydown", e => {
-    if (e.key.toLowerCase() === "r") socket.emit('restart‑round', { roomId });
+    if (e.key.toLowerCase() === "r") socket.emit('restart-round', { roomId });
   });
 
-  socket.on('join‑success', () => {
-    socket.emit('player‑ready', {
-      roomId,
-      name: document.getElementById("p2").value.trim()
-    });
+  socket.on('player-ready', () => {
+    // once other player joins, this client waits
+    document.getElementById("wait-msg").hidden = false;
   });
 
-  socket.on('both‑ready', ({ p2name }) => {
+  socket.on('both-ready', ({ p2name }) => {
     p2 = p2name;
     finalizeStart();
   });
 
-  socket.on('make‑move', applyMove);
-  socket.on('restart‑round', resetRound);
+  socket.on('make-move', applyMove);
+  socket.on('restart-round', resetRound);
 });
 
 /* ========== initialize game on click ========== */
@@ -52,14 +49,11 @@ function startGame() {
   p2 = document.getElementById("p2").value.trim();
   gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked').value || "3");
 
-  // ✅ Mandatory checks
-  if (!mode) return alert("Choose single or multiplayer mode.");
-  if (!gameMode) return alert("Choose first‑to‑3 or first‑to‑5.");
   if (!p1 || (mode === "multi" && !p2)) {
-    return alert("Please enter the required player names.");
+    return alert("Please enter required player names.");
   }
 
-   if (mode === "single") {
+  if (mode === "single") {
     p2 = cpuName;
     finalizeStart();
   } else {
@@ -75,13 +69,11 @@ function startGame() {
 
 /* ========== finalize start UI ========== */
 function finalizeStart() {
-  document.getElementById("mode-entry").style.display = "none";
+  document.getElementById("mode-entry").hidden = true;
   document.getElementById("name-entry").hidden = true;
-  document.getElementById("wait-msg").hidden = true;
   document.getElementById("game").hidden = false;
   buildBoard();
   updateInfo();
-  overlaySetup();
   setTimeout(() => {
     overlay.width = boardEl.offsetWidth;
     overlay.height = boardEl.offsetHeight + 100;
@@ -89,21 +81,11 @@ function finalizeStart() {
   }, 0);
 }
 
-/* ========== overlay + board ========== */
-function overlaySetup() {
-  setTimeout(() => {
-    overlay.width = boardEl.offsetWidth;
-    overlay.height = boardEl.offsetHeight + 100;
-    overlay.style.display = 'none';
-  }, 0);
-}
-
+/* ========== board setup ========== */
 function buildBoard() {
   board = Array(9).fill(null);
   current = "X"; gameOver = false;
   boardEl.innerHTML = "";
-  ctx.clearRect(0, 0, overlay.width, overlay.height);
-
   board.forEach((_, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
@@ -113,27 +95,18 @@ function buildBoard() {
   });
 }
 
-/* ========== click handler ========== */
+/* ========== handle click ========== */
 function cellClick(e) {
   const i = +e.target.dataset.i;
-  if (gameOver || board[i]) return;
-
-  if (mode === "single") {
-    applyMove({ index: i, player: current });
-    if (!gameOver) setTimeout(cpuMove, 800);  // wait before CPU responds
-  } else {
-    socket.emit('make-move', { index: i, player: current, roomId });
-  }
+  if (gameOver || board[i] || (mode==="multi" && current==="O")) return;
+  socket.emit('make-move', { index: i, player: current, roomId });
 }
 
 /* ========== apply moves ========== */
 function applyMove({ index, player }) {
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
-  if (cell) {
-    cell.textContent = player;
-    cell.classList.add('filled');
-  }
+  if (cell) { cell.textContent = player; cell.classList.add('filled'); }
 
   const winCombo = checkWin(player);
   if (winCombo) {
@@ -143,15 +116,9 @@ function applyMove({ index, player }) {
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     drawWinLine(winCombo);
     animateWin(`🏆 ${player === "X" ? p1 : p2} wins this round! 🏆`);
-
     if (scoreX >= gameMode || scoreO >= gameMode) {
-      setTimeout(() => {
-        alert(`${player === "X" ? p1 : p2} won the game!`);
-        window.location.reload();
-      }, 3500);
-    } else {
-      setTimeout(resetRound, 5000);
-    }
+      setTimeout(() => { alert(`${player === "X" ? p1 : p2} won the game!`); window.location.reload(); }, 3500);
+    } else setTimeout(resetRound, 5000);
     return;
   }
 
@@ -164,27 +131,16 @@ function applyMove({ index, player }) {
 
   current = current === "X" ? "O" : "X";
   updateInfo();
-
- if (mode === "single" && current === "O" && !gameOver) {
-  // CPU goes next, after a short delay
-  setTimeout(cpuMove, 600);
-}
+  if (mode === "single" && current === "O" && !gameOver) setTimeout(cpuMove, 600);
 }
 
-/* ========== CPU smart move ========== */
-/* CPU picks one move and then passes back to player */
+/* ========== CPU logic ========== */
 function cpuMove() {
   if (gameOver) return;
-
-  const available = board.map((v, i) => v === null ? i : null)
-                         .filter(i => i !== null);
+  const available = board.map((v,i)=>v===null?i:null).filter(i=>i!==null);
   if (!available.length) return;
-
-  // Basic win/block minimax approach:
   const winMove = findWinningMove("O") || findWinningMove("X");
-  const idx = winMove ??
-              available[Math.floor(Math.random() * available.length)];
-
+  const idx = winMove ?? available[Math.floor(Math.random() * available.length)];
   socket.emit('make-move', { index: idx, player: "O", roomId });
 }
 
@@ -195,27 +151,25 @@ function findWinningMove(p) {
     [0,4,8],[2,4,6]
   ];
   for (let combo of wins) {
-    const [a, b, c] = combo;
+    const [a,b,c] = combo;
     const vals = [board[a], board[b], board[c]];
-    if (vals.filter(v => v === p).length === 2 && vals.includes(null)) {
+    if (vals.filter(v => v===p).length === 2 && vals.includes(null)) {
       return combo[vals.indexOf(null)];
     }
   }
   return null;
 }
 
-/* ========== UI + logic ========== */
+/* ========== UI helpers ========== */
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById("turn").textContent = gameOver ?
-    "Game Over" : `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent =
-    `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
+  document.getElementById("turn").textContent = gameOver ? "Game Over" : `${current=== "X" ? p1 : p2}'s turn (${current})`;
+  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
 }
 
 function checkWin(p) {
   const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  return wins.find(c => c.every(i => board[i] === p));
+  return wins.find(c=>c.every(i=>board[i]===p));
 }
 
 function drawWinLine(combo) {
