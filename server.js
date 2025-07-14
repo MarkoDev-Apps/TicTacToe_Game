@@ -7,7 +7,7 @@ const app = express(); // ✅ Make sure this line comes first
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://play.markotictoegame.com/", // Replace with your actual frontend domain
+    origin: "play.markotictoegame.com", // Replace with your actual frontend domain
     methods: ["GET", "POST"]
   }
 });

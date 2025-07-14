@@ -8,7 +8,8 @@ const socket = io();
 let board = Array(9).fill(null);
 let current = "X", gameOver = false;
 let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
-let roomId = ""; // ✅ define globally
+let roomId = "";
+let gameMode = 3; // Default to "first to 3 wins"
 
 document.addEventListener("DOMContentLoaded", () => {
   roomId = prompt("Enter room name (same for both players):");
@@ -47,8 +48,17 @@ document.addEventListener("DOMContentLoaded", () => {
       updateInfo();
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       drawWinLine(winCombo);
-      animateWin(`🏆 ${player === "X" ? p1 : p2} wins! 🏆`);
-      setTimeout(() => resetRound(), 5000);
+      animateWin(`🏆 ${player === "X" ? p1 : p2} wins this round! 🏆`);
+
+      // Check for game end
+      if (scoreX >= gameMode || scoreO >= gameMode) {
+        setTimeout(() => {
+          alert(`${player === "X" ? p1 : p2} wins the game!`);
+          window.location.reload(); // End game
+        }, 3500);
+      } else {
+        setTimeout(() => resetRound(), 5000);
+      }
       return;
     }
 
@@ -69,6 +79,7 @@ function startGame() {
 
   const p1Name = document.getElementById("p1").value.trim();
   const p2Name = document.getElementById("p2").value.trim();
+  const modeValue = document.querySelector('input[name="mode"]:checked');
 
   if (!p1Name || !p2Name) {
     alert("Please enter names for both Player 1 and Player 2.");
@@ -77,6 +88,8 @@ function startGame() {
 
   p1 = p1Name;
   p2 = p2Name;
+
+  gameMode = modeValue ? parseInt(modeValue.value) : 3;
 
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
@@ -110,17 +123,17 @@ function cellClick(e) {
   const i = e.target.dataset.i;
   if (gameOver || board[i]) return;
 
-  socket.emit('make-move', { index: i, player: current, roomId }); // ✅ pass roomId
+  socket.emit('make-move', { index: i, player: current, roomId });
 }
 
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
   document.getElementById("turn").textContent = `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO}`;
+  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
 }
 
 function restart() {
-  socket.emit('restart-round', { roomId }); // ✅ pass roomId
+  socket.emit('restart-round', { roomId });
 }
 
 function checkWin(player) {

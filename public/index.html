@@ -12,6 +12,19 @@
     <h2>Enter Player Names</h2>
     <input id="p1" placeholder="Player 1 name" maxlength="15" required />
     <input id="p2" placeholder="Player 2 name" maxlength="15" required />
+
+    <!-- ✅ Game Mode Selector -->
+    <div id="mode-select" style="margin-bottom: 10px;">
+      <label>
+        <input type="radio" name="mode" value="3" checked>
+        First to 3 Wins
+      </label>
+      <label style="margin-left: 15px;">
+        <input type="radio" name="mode" value="5">
+        First to 5 Wins
+      </label>
+    </div>
+
     <button id="startBtn">Start Game</button>
     <p id="welcome-msg">Welcome to TicTacToe Game 🎮</p>
   </div>
@@ -29,9 +42,9 @@
 
   <canvas id="overlay"></canvas>
 
-  <!-- Use relative paths for portability -->
- <audio id="winSound" src="sounds/mixkit-cheering-crowd-loud-whistle-610.mp3"></audio>
-<audio id="drawSound" src="sounds/mixkit-cartoon-failure-piano-473.mp3"></audio>
+  <!-- Audio Files -->
+  <audio id="winSound" src="sounds/mixkit-cheering-crowd-loud-whistle-610.mp3"></audio>
+  <audio id="drawSound" src="sounds/mixkit-cartoon-failure-piano-473.mp3"></audio>
 
   <footer id="footer">
     &copy; 2025 Marko TicTacToe Game. All rights reserved.
@@ -41,8 +54,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
