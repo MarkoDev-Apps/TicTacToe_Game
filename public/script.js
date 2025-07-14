@@ -121,12 +121,29 @@ function cellClick(e) {
   const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
 
-  if (mode === "single" && current === "X") {
+  // Handle single player mode (human vs CPU)
+  if (mode === "single") {
+    if (current !== "X") return; // Only let player (X) click
     socket.emit("make-move", { index: i, player: "X", roomId });
-  } else if (mode === "multi") {
+
+    // Let CPU go after a short delay
+    setTimeout(() => {
+      if (gameOver) return;
+      const emptyIndices = board.map((val, idx) => val === null ? idx : null).filter(v => v !== null);
+      if (emptyIndices.length === 0) return;
+
+      // Simple AI: choose random empty cell
+      const cpuChoice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      socket.emit("make-move", { index: cpuChoice, player: "O", roomId });
+    }, 500);
+  }
+
+  // Handle multiplayer mode
+  else if (mode === "multi") {
     socket.emit("make-move", { index: i, player: current, roomId });
   }
 }
+
 
 /* ===== Apply and render moves ===== */
 function applyMove({ index, player }) {
