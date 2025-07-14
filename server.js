@@ -3,14 +3,16 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
-const app = express(); // ← make sure this line comes first before using `app`
+const app = express(); // ✅ Make sure this line comes first
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://play.markotictoegame.com/", // Replace "*" with your frontend domain if needed
+    origin: "https://play.markotictoegame.com/", // Replace with your actual frontend domain
     methods: ["GET", "POST"]
   }
+});
 
+// ✅ Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
@@ -22,17 +24,19 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('player-joined');
   });
 
-  // ✅ Move these OUTSIDE the join handler and use roomId from data
- socket.on('make-move', ({ index, player, roomId }) => {
-  console.log('server: received make-move', { index, player, roomId });
-  io.to(roomId).emit('make-move', { index, player });
-});
+  // ✅ Listen for moves
+  socket.on('make-move', ({ index, player, roomId }) => {
+    console.log('server: received make-move', { index, player, roomId });
+    io.to(roomId).emit('make-move', { index, player });
+  });
 
-socket.on('restart-round', ({ roomId }) => {
-  console.log('server: received restart-round for', roomId);
-  io.to(roomId).emit('restart-round');
-});
+  // ✅ Listen for restart
+  socket.on('restart-round', ({ roomId }) => {
+    console.log('server: received restart-round for', roomId);
+    io.to(roomId).emit('restart-round');
+  });
 
+  // ✅ Notify others when a player disconnects
   socket.on('disconnecting', () => {
     const rooms = Array.from(socket.rooms).filter(r => r !== socket.id);
     rooms.forEach(roomId => socket.to(roomId).emit('player-left'));
