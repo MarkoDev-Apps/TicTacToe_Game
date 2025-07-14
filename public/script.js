@@ -145,16 +145,19 @@ function applyMove({ index, player }) {
 
   current = current === "X" ? "O" : "X";
   updateInfo();
-  if (mode === "single" && current === "O" && !gameOver) setTimeout(cpuMove, 600);
+  // If it's CPU's turn in single-player, let them play after a short delay
+   if (mode === "single" && current === "O") {
+   setTimeout(cpuMove, 500);
+ }
 }
 
 /* ========== CPU logic ========== */
 function cpuMove() {
   if (gameOver) return;
-  const available = board.map((v,i)=>v===null?i:null).filter(i=>i!==null);
-  if (!available.length) return;
-  const winMove = findWinningMove("O") || findWinningMove("X");
-  const idx = winMove ?? available[Math.floor(Math.random() * available.length)];
+  const available = board.map((v, i) => v ? null : i).filter(v => v !== null);
+  if (available.length === 0) return;
+
+  const idx = available[Math.floor(Math.random() * available.length)];
   socket.emit('make-move', { index: idx, player: "O", roomId });
 }
 
