@@ -9,17 +9,13 @@
 </head>
 <body>
 
-  <!-- ✅ Game Mode Selection -->
-  <div id="mode-entry">
-    <label class="toggle-option">
-      <input type="radio" name="mode" id="mode-sp" value="single">
-      Single Player
-    </label>
-    <label class="toggle-option">
-      <input type="radio" name="mode" id="mode-mp" value="multi">
-      Multiplayer
-    </label>
-  </div>
+  <div id="mode-entry" class="mode-toggle">
+  <input type="radio" name="mode" id="mode-sp" value="single" checked>
+  <label for="mode-sp">Single Player</label>
+  <input type="radio" name="mode" id="mode-mp" value="multi">
+  <label for="mode-mp">Multiplayer</label>
+</div>
+
 
   <div id="name-entry">
     <h2>Enter Player Names</h2>
@@ -27,16 +23,12 @@
     <input id="p2" placeholder="Player 2 name" maxlength="15" required />
 
     <!-- ✅ Win Condition Selection -->
-    <div id="mode-select">
-      <label class="checkbox-option">
-        <input type="radio" name="modeWin" value="3">
-        First to 3 Wins
-      </label>
-      <label class="checkbox-option">
-        <input type="radio" name="modeWin" value="5">
-        First to 5 Wins
-      </label>
-    </div>
+   <div id="round-select" class="round-toggle">
+  <input type="radio" name="modeWin" id="round-3" value="3" checked>
+  <label for="round-3">First to 3 Wins</label>
+  <input type="radio" name="modeWin" id="round-5" value="5">
+  <label for="round-5">First to 5 Wins</label>
+</div>
 
     <button id="startBtn"><strong>Start Game</strong></button>
     <p id="wait-msg" hidden>Waiting for Player 2 to join...</p>
