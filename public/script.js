@@ -54,27 +54,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ===== Start game logic ===== */
 function startGame() {
-  console.log("startGame triggered:", {
-    modeVal: document.querySelector('input[name="mode"]:checked')?.value,
-    winVal: document.querySelector('input[name="modeWin"]:checked')?.value,
-    name1: document.getElementById("p1").value,
-    name2: document.getElementById("p2").value,
-  });
+  p1 = document.getElementById("p1").value.trim();
+  p2 = document.getElementById("p2").value.trim();
+  const selectedWinVal = document.querySelector('input[name="modeWin"]:checked');
 
-  if (!selMode || !selWin) return alert("Please choose game mode and winning condition.");
-  mode = selMode.value;
-  gameMode = parseInt(selWin.value);
+  // Make sure player 1 entered a name and a win condition is selected
+  if (!p1 || !selectedWinVal) {
+    alert("Please enter your name and choose a winning condition.");
+    return;
+  }
 
-  if (!p1 || (mode === "multi" && !p2)) return alert("Please enter required player names.");
+  gameMode = parseInt(selectedWinVal.value, 10); // Set 3 or 5
 
   if (mode === "single") {
     p2 = cpuName;
-    finalizeStart();
+    finalizeStart(); // start game immediately
   } else {
+    // multiplayer path
+    if (!p2) {
+      alert("Please enter name for Player 2.");
+      return;
+    }
+
     if (!roomId) {
       roomId = prompt("Enter a room name (for multiplayer):");
-      if (!roomId) return alert("Room name is required for multiplayer.");
-      socket.emit("join-room", { roomId, name: p1 });
+      if (!roomId) return alert("A room name is required for multiplayer.");
+      socket.emit('join-room', { roomId, name: p1 });
       document.getElementById("wait-msg").hidden = false;
     }
   }
