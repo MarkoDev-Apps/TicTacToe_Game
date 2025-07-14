@@ -3,18 +3,66 @@ const overlay = document.getElementById("overlay");
 const ctx = overlay.getContext("2d");
 const winSound = document.getElementById("winSound");
 const drawSound = document.getElementById("drawSound");
+const socket = io();
 
 let board = Array(9).fill(null);
 let current = "X", gameOver = false;
 let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
+let roomId = ""; // ✅ define globally
 
-document.getElementById("startBtn").onclick = startGame;
-document.getElementById("resetBtn").onclick = restart;
-window.onkeydown = (e) => {
-  if (document.activeElement.tagName !== "INPUT" && e.key.toLowerCase() === "r") {
-    restart();
-  }
-};
+document.addEventListener("DOMContentLoaded", () => {
+  roomId = prompt("Enter room name (same for both players):");
+  socket.emit('join', roomId);
+
+  document.getElementById("startBtn").onclick = startGame;
+  document.getElementById("resetBtn").onclick = restart;
+
+  window.onkeydown = (e) => {
+    if (document.activeElement.tagName !== "INPUT" && e.key.toLowerCase() === "r") {
+      restart();
+    }
+  };
+
+  socket.on('restart-round', () => {
+    console.log('client: received restart-round');
+    resetRound();
+  });
+
+  socket.on('make-move', ({ index, player }) => {
+    console.log('client: received make-move', index, player);
+    if (board[index] || gameOver) return;
+
+    board[index] = player;
+    const cell = boardEl.querySelector(`[data-i="${index}"]`);
+    if (cell) {
+      cell.textContent = player;
+      cell.classList.add('filled');
+    }
+
+    const winCombo = checkWin(player);
+    if (winCombo) {
+      gameOver = true;
+      try { winSound.play(); } catch (err) {}
+      if (player === "X") scoreX++; else scoreO++;
+      updateInfo();
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      drawWinLine(winCombo);
+      animateWin(`🏆 ${player === "X" ? p1 : p2} wins! 🏆`);
+      setTimeout(() => resetRound(), 5000);
+      return;
+    }
+
+    if (board.every(Boolean)) {
+      gameOver = true;
+      try { drawSound.play(); } catch (err) {}
+      animateWin("It's a draw!");
+      setTimeout(() => resetRound(), 5000);
+    }
+
+    current = player === "X" ? "O" : "X";
+    updateInfo();
+  });
+});
 
 function startGame() {
   console.log("🎮 startGame() called");
@@ -33,18 +81,15 @@ function startGame() {
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
 
-  buildBoard();      // First, build the board
-  updateInfo();      // Then, update scores/names
+  buildBoard();
+  updateInfo();
 
-  // Delay overlay resizing just slightly
   setTimeout(() => {
-    overlay.width = boardEL.offsetWidth;
-    overlay.height = boardEL.offsetHeight + 100;
-    overlay.style.display = 'none'; // Hide initially
-  }, 0); // 0 ms lets the DOM update first
+    overlay.width = boardEl.offsetWidth;
+    overlay.height = boardEl.offsetHeight + 100;
+    overlay.style.display = 'none';
+  }, 0);
 }
-
-
 
 function buildBoard() {
   board = Array(9).fill(null);
@@ -61,91 +106,48 @@ function buildBoard() {
   }
 }
 
-function updateInfo() {
-  document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById('turn').textContent = `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById('scores').textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO}`;
-}
-
 function cellClick(e) {
   const i = e.target.dataset.i;
   if (gameOver || board[i]) return;
-  board[i] = current;
-  e.target.textContent = current;
-  e.target.classList.add('filled');
-  const winCombo = checkWin(current);
-  if (winCombo) {
-  console.log('WIN combo:', winCombo);
-  gameOver = true;
-  try {
-    winSound.play();
-  } catch (err) {
-    console.warn("Win sound failed to play:", err);
-  }
-  if (current === "X") scoreX++; else scoreO++;
-  updateInfo(); // update score display
-   setTimeout(() => {
-    resetRound();
-  }, 5000);
-  // Check for 3 wins and end game
-  if (scoreX === 3 || scoreO === 3) {
-    setTimeout(() => {
-      alert(`${scoreX === 3 ? p1 : p2} wins the series!`);
-      location.reload();
-    }, 500);
-    return;
-  }
-  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  animateWin(`🏆 ${current === "X" ? p1 : p2} wins! 🏆`);
 
-  drawWinLine(winCombo);
+  socket.emit('make-move', { index: i, player: current, roomId }); // ✅ pass roomId
+}
 
-} else if (board.every(Boolean)) {
-    gameOver = true;
-     try {
-    drawSound.play();
-  } catch (err) {
-    console.warn("Draw sound failed to play:", err);
-  }
-   setTimeout(() => {
-    resetRound();
-  }, 5000);
-    animateWin("It's a draw!");
-    drawSound.play();  // new draw audio
-  } else {
-    current = current === "X" ? "O" : "X";
-    updateInfo();
-  }
+function updateInfo() {
+  document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
+  document.getElementById("turn").textContent = `${current === "X" ? p1 : p2}'s turn (${current})`;
+  document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO}`;
 }
 
 function restart() {
-  buildBoard();
-  updateInfo();
+  socket.emit('restart-round', { roomId }); // ✅ pass roomId
 }
 
 function checkWin(player) {
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
   return wins.find(combo => combo.every(i => board[i] === player));
 }
 
 function drawWinLine(combo) {
-  const rects = combo.map(i => boardEL.children[i].getBoundingClientRect());
-  const boardRect = boardEL.getBoundingClientRect();
+  const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
+  const boardRect = boardEl.getBoundingClientRect();
   const [startCell, , endCell] = rects;
 
   const getCenter = rect => {
-  const scale = 0.35; // smaller value = shorter line
-  return {
-    x: rect.left + rect.width * scale + rect.width * (1 - 2 * scale) / 2 - boardRect.left,
-    y: rect.top + rect.height * scale + rect.height * (1 - 2 * scale) / 2 - boardRect.top
+    const scale = 0.35;
+    return {
+      x: rect.left + rect.width * scale + rect.width * (1 - 2 * scale) / 2 - boardRect.left,
+      y: rect.top + rect.height * scale + rect.height * (1 - 2 * scale) / 2 - boardRect.top
+    };
   };
-};
-
 
   const { x: startX, y: startY } = getCenter(startCell);
   const { x: endX, y: endY } = getCenter(endCell);
 
-  // Shorten the line by trimming both ends
   const shortenFactor = 0.85;
   const dx = endX - startX;
   const dy = endY - startY;
@@ -183,9 +185,8 @@ function animateWin(text) {
   const msgEl = document.getElementById("winMessage");
   msgEl.textContent = `🏆 ${text} 🏆`;
 
-  // Force reflow to restart animation
   msgEl.classList.remove("fade-text");
-  void msgEl.offsetWidth; // trigger reflow
+  void msgEl.offsetWidth;
   msgEl.classList.add("fade-text");
 
   setTimeout(() => {
@@ -199,9 +200,6 @@ function resetRound() {
   board = Array(9).fill(null);
   gameOver = false;
   current = "X";
-  buildBoard();       // Redraw cells if needed
-  updateInfo();       // Update UI with current turn and score
+  buildBoard();
+  updateInfo();
 }
-
-
-

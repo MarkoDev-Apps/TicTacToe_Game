@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tic Tac Toe</title>
   <link rel="stylesheet" href="style.css" />
@@ -29,14 +28,20 @@
   </div>
 
   <canvas id="overlay"></canvas>
-  <audio id="winSound" src="C:/Users/Marko/Downloads/mixkit-cheering-crowd-loud-whistle-610.mp3" preload="auto"></audio>
-  <audio id="drawSound" src="C:/Users/Marko/Downloads/mixkit-cartoon-failure-piano-473.mp3" preload="auto"></audio>
+
+  <!-- Use relative paths for portability -->
+ <audio id="winSound" src="sounds/mixkit-cheering-crowd-loud-whistle-610.mp3"></audio>
+<audio id="drawSound" src="sounds/mixkit-cartoon-failure-piano-473.mp3"></audio>
+
+  <footer id="footer">
+    &copy; 2025 Marko TicTacToe Game. All rights reserved.
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
-<footer id="footer">
-  &copy; 2025 Marko TicTacToe Game. All rights reserved.
-</footer>
 </body>
 </html>
+
 
 
 
