@@ -1,102 +1,80 @@
+/* ========== setup ========== */
+const socket = io();
 const boardEl = document.getElementById("board");
 const overlay = document.getElementById("overlay");
 const ctx = overlay.getContext("2d");
 const winSound = document.getElementById("winSound");
 const drawSound = document.getElementById("drawSound");
-const socket = io();
 
 let board = Array(9).fill(null);
 let current = "X", gameOver = false;
 let p1 = "", p2 = "", scoreX = 0, scoreO = 0;
 let roomId = "";
-let gameMode = 3; // Default to "first to 3 wins"
+let gameMode = 3;
+let mode = "single";
+const cpuName = "CPU";
 
+/* ========== on DOM load ========== */
 document.addEventListener("DOMContentLoaded", () => {
-  roomId = prompt("Enter room name (same for both players):");
-  socket.emit('join', roomId);
+  document.querySelectorAll('input[name="mode"]').forEach(r =>
+    r.addEventListener("change", () => {
+      mode = r.value;
+      document.getElementById("p2").hidden = mode === "single";
+    })
+  );
 
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = restart;
-
-  window.onkeydown = (e) => {
-    if (document.activeElement.tagName !== "INPUT" && e.key.toLowerCase() === "r") {
-      restart();
-    }
-  };
-
-  socket.on('restart-round', () => {
-    console.log('client: received restart-round');
-    resetRound();
+  document.getElementById("resetBtn").onclick = () => socket.emit('restart-round', { roomId });
+  window.addEventListener("keydown", e => {
+    if (e.key.toLowerCase() === "r") socket.emit('restart-round', { roomId });
   });
 
-  socket.on('make-move', ({ index, player }) => {
-    console.log('client: received make-move', index, player);
-    if (board[index] || gameOver) return;
-
-    board[index] = player;
-    const cell = boardEl.querySelector(`[data-i="${index}"]`);
-    if (cell) {
-      cell.textContent = player;
-      cell.classList.add('filled');
-    }
-
-    const winCombo = checkWin(player);
-    if (winCombo) {
-      gameOver = true;
-      try { winSound.play(); } catch (err) {}
-      if (player === "X") scoreX++; else scoreO++;
-      updateInfo();
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-      drawWinLine(winCombo);
-      animateWin(`🏆 ${player === "X" ? p1 : p2} wins this round! 🏆`);
-
-      // Check for game end
-      if (scoreX >= gameMode || scoreO >= gameMode) {
-        setTimeout(() => {
-          alert(`${player === "X" ? p1 : p2} wins the game!`);
-          window.location.reload(); // End game
-        }, 3500);
-      } else {
-        setTimeout(() => resetRound(), 5000);
-      }
-      return;
-    }
-
-    if (board.every(Boolean)) {
-      gameOver = true;
-      try { drawSound.play(); } catch (err) {}
-      animateWin("It's a draw!");
-      setTimeout(() => resetRound(), 5000);
-    }
-
-    current = player === "X" ? "O" : "X";
-    updateInfo();
+  /* ========== Socket listeners ========== */
+  socket.on('join-success', () => {
+    socket.emit('player-ready', { roomId, name: document.getElementById("p2").value.trim() });
   });
+
+  socket.on('both-ready', ({p2name}) => {
+    p2 = p2name;
+    finalizeStart();
+  });
+
+  socket.on('make-move', applyMove);
+  socket.on('restart-round', resetRound);
 });
 
+/* ========== initialize game on click ========== */
 function startGame() {
-  console.log("🎮 startGame() called");
+  p1 = document.getElementById("p1").value.trim();
+  p2 = document.getElementById("p2").value.trim();
+  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked').value || "3");
 
-  const p1Name = document.getElementById("p1").value.trim();
-  const p2Name = document.getElementById("p2").value.trim();
-  const modeValue = document.querySelector('input[name="mode"]:checked');
-
-  if (!p1Name || !p2Name) {
-    alert("Please enter names for both Player 1 and Player 2.");
-    return;
+  if (!p1 || (mode === "multi" && !p2)) {
+    return alert("Please enter required player names.");
   }
 
-  p1 = p1Name;
-  p2 = p2Name;
+  if (mode === "single") {
+    p2 = cpuName;
+    finalizeStart();
+  } else {
+    roomId = prompt("Enter a room name (for multiplayer):");
+    if (!roomId) return alert("A room name is required for multiplayer.");
+    socket.emit('join-room', roomId);
+  }
+}
 
-  gameMode = modeValue ? parseInt(modeValue.value) : 3;
-
+/* ========== finalize start UI ========== */
+function finalizeStart() {
+  document.getElementById("mode-entry").hidden = true;
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
-
   buildBoard();
   updateInfo();
+  overlaySetup();
+}
 
+/* ========== board setup ========== */
+function overlaySetup() {
   setTimeout(() => {
     overlay.width = boardEl.offsetWidth;
     overlay.height = boardEl.offsetHeight + 100;
@@ -110,109 +88,139 @@ function buildBoard() {
   boardEl.innerHTML = "";
   ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-  for (let i = 0; i < 9; i++) {
+  board.forEach((_, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
     cell.dataset.i = i;
-    cell.onclick = cellClick;
+    cell.addEventListener("click", cellClick);
     boardEl.appendChild(cell);
-  }
+  });
 }
 
+/* ========== click handler ========== */
 function cellClick(e) {
-  const i = e.target.dataset.i;
+  const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
-
   socket.emit('make-move', { index: i, player: current, roomId });
 }
 
+/* ========== apply moves (local or remote) ========== */
+function applyMove({ index, player }) {
+  board[index] = player;
+  const cell = boardEl.querySelector(`[data-i="${index}"]`);
+  if (cell) {
+    cell.textContent = player;
+    cell.classList.add('filled');
+  }
+
+  const winCombo = checkWin(player);
+  if (winCombo) {
+    gameOver = true;
+    player === "X" ? scoreX++ : scoreO++;
+    try { winSound.play(); } catch {}
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    drawWinLine(winCombo);
+    animateWin(`🏆 ${player === "X" ? p1 : p2} wins this round! 🏆`);
+
+    if (scoreX >= gameMode || scoreO >= gameMode) {
+      setTimeout(() => {
+        alert(`${player === "X" ? p1 : p2} won the game!`);
+        window.location.reload();
+      }, 3500);
+    } else {
+      setTimeout(resetRound, 5000);
+    }
+    return;
+  }
+
+  if (board.every(Boolean)) {
+    gameOver = true;
+    try { drawSound.play(); } catch {}
+    animateWin("It's a draw!");
+    return setTimeout(resetRound, 5000);
+  }
+
+  current = current === "X" ? "O" : "X";
+  updateInfo();
+
+  if (mode === "single" && current === "O") setTimeout(cpuMove, 300);
+}
+
+/* ========== CPU move ========== */
+function cpuMove() {
+  const available = board.map((v, i) => v ? null : i).filter(v => v !== null);
+  if (!available.length) return;
+  const idx = available[Math.floor(Math.random() * available.length)];
+  socket.emit('make-move', { index: idx, player: "O", roomId });
+}
+
+/* ========== helper UI + logic ========== */
 function updateInfo() {
   document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById("turn").textContent = `${current === "X" ? p1 : p2}'s turn (${current})`;
+  document.getElementById("turn").textContent = gameOver ?
+    "Game Over" : `${current === "X" ? p1 : p2}'s turn (${current})`;
   document.getElementById("scores").textContent = `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
 }
 
-function restart() {
-  socket.emit('restart-round', { roomId });
-}
-
-function checkWin(player) {
-  const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  return wins.find(combo => combo.every(i => board[i] === player));
+function checkWin(p) {
+  const wins = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
+  return wins.find(c => c.every(i => board[i] === p));
 }
 
 function drawWinLine(combo) {
   const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
   const boardRect = boardEl.getBoundingClientRect();
-  const [startCell, , endCell] = rects;
-
-  const getCenter = rect => {
+  const [ac, , bc] = rects;
+  const getCenter = r => {
     const scale = 0.35;
     return {
-      x: rect.left + rect.width * scale + rect.width * (1 - 2 * scale) / 2 - boardRect.left,
-      y: rect.top + rect.height * scale + rect.height * (1 - 2 * scale) / 2 - boardRect.top
+      x: r.left + r.width * scale + r.width * (1 - 2 * scale) / 2 - boardRect.left,
+      y: r.top + r.height * scale + r.height * (1 - 2 * scale) / 2 - boardRect.top
     };
   };
+  const { x: sx, y: sy } = getCenter(ac);
+  const { x: ex, y: ey } = getCenter(bc);
+  const shorten = 0.85,
+        dx = ex - sx,
+        dy = ey - sy,
+        sX = sx + dx*(1-shorten)/2,
+        sY = sy + dy*(1-shorten)/2,
+        eX = ex - dx*(1-shorten)/2,
+        eY = ey - dy*(1-shorten)/2;
 
-  const { x: startX, y: startY } = getCenter(startCell);
-  const { x: endX, y: endY } = getCenter(endCell);
-
-  const shortenFactor = 0.85;
-  const dx = endX - startX;
-  const dy = endY - startY;
-
-  const adjustedStartX = startX + dx * (1 - shortenFactor) / 2;
-  const adjustedStartY = startY + dy * (1 - shortenFactor) / 2;
-  const adjustedEndX = endX - dx * (1 - shortenFactor) / 2;
-  const adjustedEndY = endY - dy * (1 - shortenFactor) / 2;
-
-  const totalSteps = 20;
-  let step = 0;
-
-  const draw = () => {
-    const t = step / totalSteps;
-    const currentX = adjustedStartX + (adjustedEndX - adjustedStartX) * t;
-    const currentY = adjustedStartY + (adjustedEndY - adjustedStartY) * t;
-
-    ctx.clearRect(0, 0, overlay.width, overlay.height);
-    ctx.strokeStyle = "#000000";
+  let t = 0, steps = 20;
+  const interval = () => {
+    const pct = t/steps;
+    const cX = sX + (eX - sX)*pct;
+    const cY = sY + (eY - sY)*pct;
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.strokeStyle = "#000";
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(adjustedStartX, adjustedStartY);
-    ctx.lineTo(currentX, currentY);
+    ctx.moveTo(sX, sY);
+    ctx.lineTo(cX, cY);
     ctx.stroke();
-
-    if (step < totalSteps) {
-      step++;
-      requestAnimationFrame(draw);
-    }
+    if (t++ < steps) requestAnimationFrame(interval);
   };
-  draw();
+  interval();
 }
 
-function animateWin(text) {
-  const msgEl = document.getElementById("winMessage");
-  msgEl.textContent = `🏆 ${text} 🏆`;
-
-  msgEl.classList.remove("fade-text");
-  void msgEl.offsetWidth;
-  msgEl.classList.add("fade-text");
-
+function animateWin(msg) {
+  const el = document.getElementById("winMessage");
+  el.textContent = msg;
+  el.classList.remove("fade-text");
+  void el.offsetWidth;
+  el.classList.add("fade-text");
   setTimeout(() => {
-    msgEl.classList.remove("fade-text");
-    msgEl.textContent = "";
+    el.classList.remove("fade-text");
+    el.textContent = "";
     updateInfo();
   }, 3000);
 }
 
 function resetRound() {
   board = Array(9).fill(null);
-  gameOver = false;
-  current = "X";
+  current = "X"; gameOver = false;
   buildBoard();
   updateInfo();
 }

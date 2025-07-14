@@ -223,3 +223,15 @@ button {
 input:invalid {
   border: 2px solid red;
 }
+
+#mode-entry {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+#mode-entry label {
+  font-weight: bold;
+  color: white;
+}
+

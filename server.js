@@ -15,13 +15,28 @@ const io = new Server(server, {
 // ✅ Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// track rooms and names
+const rooms = {};
+
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  socket.on('join', (roomId) => {
+  socket.on('join', roomId => {
     socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
-    socket.to(roomId).emit('player-joined');
+    console.log(`${socket.id} joined ${roomId}`);
+    if (!rooms[roomId]) rooms[roomId] = {};
+    rooms[roomId][socket.id] = true;
+    if (Object.keys(rooms[roomId]).length === 2) {
+      io.to(roomId).emit('both-joined');
+    }
+  });
+
+   socket.on('await-player',roomId=>{
+    socket.join(roomId);
+  });
+
+  socket.on('provide-name',({name, roomId})=>{
+    io.to(roomId).emit('player-2-joined', name);
   });
 
   // ✅ Listen for moves
@@ -37,11 +52,12 @@ io.on('connection', (socket) => {
   });
 
   // ✅ Notify others when a player disconnects
-  socket.on('disconnecting', () => {
-    const rooms = Array.from(socket.rooms).filter(r => r !== socket.id);
-    rooms.forEach(roomId => socket.to(roomId).emit('player-left'));
+   socket.on('disconnecting',()=>{
+    Object.keys(socket.rooms)
+      .filter(r=>r!==socket.id)
+      .forEach(roomId=>io.to(roomId).emit('player-left'));
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const PORT = process.env.PORT||3000;
+server.listen(PORT,()=>console.log(`Server running on port ${PORT}`));

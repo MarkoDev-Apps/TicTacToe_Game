@@ -8,6 +8,14 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
+
+<div id="mode-entry">
+    <input type="radio" name="mode" id="mode-sp" value="single" checked>
+    <label for="mode-sp">Single Player</label>
+    <input type="radio" name="mode" id="mode-mp" value="multi">
+    <label for="mode-mp">Multiplayer</label>
+  </div>
+
   <div id="name-entry">
     <h2>Enter Player Names</h2>
     <input id="p1" placeholder="Player 1 name" maxlength="15" required />
@@ -26,6 +34,7 @@
     </div>
 
     <button id="startBtn">Start Game</button>
+    <p id="wait-msg" hidden>Waiting for Player 2 to join...</p>
     <p id="welcome-msg">Welcome to TicTacToe Game 🎮</p>
   </div>
 
