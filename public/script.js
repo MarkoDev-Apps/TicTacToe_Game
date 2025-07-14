@@ -54,10 +54,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ===== Start game logic ===== */
 function startGame() {
-  const selMode = document.querySelector('input[name="mode"]:checked');
-  const selWin = document.querySelector('input[name="modeWin"]:checked');
-  p1 = document.getElementById("p1").value.trim();
-  p2 = document.getElementById("p2").value.trim();
+  console.log("startGame triggered:", {
+    modeVal: document.querySelector('input[name="mode"]:checked')?.value,
+    winVal: document.querySelector('input[name="modeWin"]:checked')?.value,
+    name1: document.getElementById("p1").value,
+    name2: document.getElementById("p2").value,
+  });
 
   if (!selMode || !selWin) return alert("Please choose game mode and winning condition.");
   mode = selMode.value;
