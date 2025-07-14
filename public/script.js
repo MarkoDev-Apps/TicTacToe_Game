@@ -108,13 +108,16 @@ function cellClick(e) {
   const i = +e.target.dataset.i;
   if (gameOver || board[i]) return;
 
-  if (mode === "single") {
-    applyMove({ index: i, player: current });
-    if (!gameOver) setTimeout(cpuMove, 800);
-  } else {
+  // Only let the human trigger a move
+  if (mode === "single" && current === "X") {
+    socket.emit('make-move', { index: i, player: "X", roomId });
+  }
+
+  if (mode === "multi") {
     socket.emit('make-move', { index: i, player: current, roomId });
   }
 }
+
 
 /* ========== apply moves ========== */
 function applyMove({ index, player }) {
@@ -146,19 +149,19 @@ function applyMove({ index, player }) {
   current = current === "X" ? "O" : "X";
   updateInfo();
   // If it's CPU's turn in single-player, let them play after a short delay
-   if (mode === "single" && current === "O") {
-   setTimeout(cpuMove, 500);
- }
+  if (mode === "single" && current === "O") {
+  setTimeout(cpuMove, 300);
+}
 }
 
 /* ========== CPU logic ========== */
 function cpuMove() {
-  if (gameOver) return;
+  if (gameOver || current !== "O") return;
   const available = board.map((v, i) => v ? null : i).filter(v => v !== null);
-  if (available.length === 0) return;
-
   const idx = available[Math.floor(Math.random() * available.length)];
-  socket.emit('make-move', { index: idx, player: "O", roomId });
+  if (idx !== undefined) {
+    socket.emit('make-move', { index: idx, player: "O", roomId });
+  }
 }
 
 function findWinningMove(p) {
