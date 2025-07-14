@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function startGame() {
   p1 = document.getElementById("p1").value.trim();
   p2 = document.getElementById("p2").value.trim();
-  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked')?.value || "");
+  gameMode = parseInt(document.querySelector('input[name="modeWin"]:checked').value || "3");
 
   // ✅ Mandatory checks
   if (!mode) return alert("Choose single or multiplayer mode.");
@@ -59,13 +59,17 @@ function startGame() {
     return alert("Please enter the required player names.");
   }
 
-  if (mode === "single") {
+   if (mode === "single") {
     p2 = cpuName;
     finalizeStart();
   } else {
-    roomId = prompt("Enter a room name (for multiplayer):");
-    if (!roomId) return alert("A room name is required for multiplayer.");
-    socket.emit('join‑room', roomId);
+    // multiplayer path
+    if (!roomId) {
+      roomId = prompt("Enter a room name (for multiplayer):");
+      if (!roomId) return alert("A room name is required for multiplayer.");
+      socket.emit('join-room', { roomId, name: p1 });
+      document.getElementById("wait-msg").hidden = false;
+    }
   }
 }
 
@@ -78,6 +82,11 @@ function finalizeStart() {
   buildBoard();
   updateInfo();
   overlaySetup();
+  setTimeout(() => {
+    overlay.width = boardEl.offsetWidth;
+    overlay.height = boardEl.offsetHeight + 100;
+    overlay.style.display = 'none';
+  }, 0);
 }
 
 /* ========== overlay + board ========== */
@@ -156,40 +165,43 @@ function applyMove({ index, player }) {
   current = current === "X" ? "O" : "X";
   updateInfo();
 
-  if (mode === "single" && current === "O") {
-    setTimeout(cpuMove, 300);
-  }
+ if (mode === "single" && current === "O" && !gameOver) {
+  // CPU goes next, after a short delay
+  setTimeout(cpuMove, 600);
+}
 }
 
 /* ========== CPU smart move ========== */
+/* CPU picks one move and then passes back to player */
 function cpuMove() {
-  // 1) Try to win
-  const winner = findBestMove("O");
-  if (winner !== null) return applyMove({ index: winner, player: "O" });
+  if (gameOver) return;
 
-  // 2) Block player
-  const block = findBestMove("X");
-  if (block !== null) return applyMove({ index: block, player: "O" });
+  const available = board.map((v, i) => v === null ? i : null)
+                         .filter(i => i !== null);
+  if (!available.length) return;
 
-  // 3) Random fallback
-  const avail = board.map((v,i)=>v===null?i:null).filter(v=>v!==null);
-  const idx = avail[Math.floor(Math.random()*avail.length)];
-  if (idx!==undefined) applyMove({ index: idx, player: "O" });
+  // Basic win/block minimax approach:
+  const winMove = findWinningMove("O") || findWinningMove("X");
+  const idx = winMove ??
+              available[Math.floor(Math.random() * available.length)];
+
+  socket.emit('make-move', { index: idx, player: "O", roomId });
 }
 
-function findBestMove(p) {
+function findWinningMove(p) {
   const wins = [
-    [0,1,2],[3,4,5],[6,7,8],[0,3,6],
-    [1,4,7],[2,5,8],[0,4,8],[2,4,6]
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
   ];
-  return wins.reduce((best, combo) => {
-    const marks = combo.map(i => board[i]);
-    if (marks.filter(v => v === p).length === 2 && marks.filter(v => !v).length === 1) {
-      const idx = combo[marks.indexOf(null)];
-      return (best === null) ? idx : best;
+  for (let combo of wins) {
+    const [a, b, c] = combo;
+    const vals = [board[a], board[b], board[c]];
+    if (vals.filter(v => v === p).length === 2 && vals.includes(null)) {
+      return combo[vals.indexOf(null)];
     }
-    return best;
-  }, null);
+  }
+  return null;
 }
 
 /* ========== UI + logic ========== */
