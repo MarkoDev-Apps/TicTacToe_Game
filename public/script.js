@@ -34,6 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("wait-msg").hidden = false;
   });
 
+socket.on('join-success', () => {
+  socket.emit('player-ready', {
+    roomId,
+    name: document.getElementById("p2").value.trim()
+  });
+});
+
   socket.on('both-ready', ({ p2name }) => {
     p2 = p2name;
     finalizeStart();
@@ -69,7 +76,8 @@ function startGame() {
 
 /* ========== finalize start UI ========== */
 function finalizeStart() {
-  document.getElementById("mode-entry").hidden = true;
+  // document.getElementById("mode-entry").hidden = true;
+  document.getElementById("mode-entry").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
   buildBoard();
@@ -98,8 +106,14 @@ function buildBoard() {
 /* ========== handle click ========== */
 function cellClick(e) {
   const i = +e.target.dataset.i;
-  if (gameOver || board[i] || (mode==="multi" && current==="O")) return;
-  socket.emit('make-move', { index: i, player: current, roomId });
+  if (gameOver || board[i]) return;
+
+  if (mode === "single") {
+    applyMove({ index: i, player: current });
+    if (!gameOver) setTimeout(cpuMove, 800);
+  } else {
+    socket.emit('make-move', { index: i, player: current, roomId });
+  }
 }
 
 /* ========== apply moves ========== */

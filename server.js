@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const rooms = {};
+const roomPlayers = {};
 
 const app = express(); // ✅ Make sure this line comes first
 const server = http.createServer(app);
@@ -15,47 +17,60 @@ const io = new Server(server, {
 // ✅ Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// track rooms and names
-const rooms = {};
-
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  socket.on('join', roomId => {
+  socket.on('join-room', (roomId) => {
     socket.join(roomId);
-    console.log(`${socket.id} joined ${roomId}`);
+    console.log(`${socket.id} joined room: ${roomId}`);
+
+    if (!roomPlayers[roomId]) roomPlayers[roomId] = [];
+
+    // Prevent duplicates
+    if (!roomPlayers[roomId].includes(socket.id)) {
+      roomPlayers[roomId].push(socket.id);
+    }
+
+    // Let the joining client know join was successful
+    socket.emit('join-success');
+  });
+
+  socket.on('player-ready', ({ roomId, name }) => {
+    socket.name = name;
+
+    // Store name under socket ID
     if (!rooms[roomId]) rooms[roomId] = {};
-    rooms[roomId][socket.id] = true;
+    rooms[roomId][socket.id] = name;
+
+    // If both players are now ready
     if (Object.keys(rooms[roomId]).length === 2) {
-      io.to(roomId).emit('both-joined');
+      const otherId = Object.keys(rooms[roomId]).find(id => id !== socket.id);
+      const otherName = rooms[roomId][otherId];
+
+      // Send name to the other player
+      io.to(otherId).emit('both-ready', { p2name: name });
+      io.to(socket.id).emit('both-ready', { p2name: otherName });
     }
   });
 
-   socket.on('await-player',roomId=>{
-    socket.join(roomId);
-  });
-
-  socket.on('provide-name',({name, roomId})=>{
-    io.to(roomId).emit('player-2-joined', name);
-  });
-
-  // ✅ Listen for moves
   socket.on('make-move', ({ index, player, roomId }) => {
     console.log('server: received make-move', { index, player, roomId });
     io.to(roomId).emit('make-move', { index, player });
   });
 
-  // ✅ Listen for restart
   socket.on('restart-round', ({ roomId }) => {
     console.log('server: received restart-round for', roomId);
     io.to(roomId).emit('restart-round');
   });
 
-  // ✅ Notify others when a player disconnects
-   socket.on('disconnecting',()=>{
+  socket.on('disconnecting', () => {
     Object.keys(socket.rooms)
-      .filter(r=>r!==socket.id)
-      .forEach(roomId=>io.to(roomId).emit('player-left'));
+      .filter(r => r !== socket.id)
+      .forEach(roomId => {
+        io.to(roomId).emit('player-left');
+        delete rooms[roomId]?.[socket.id];
+        roomPlayers[roomId] = roomPlayers[roomId]?.filter(id => id !== socket.id);
+      });
   });
 });
 
