@@ -12,8 +12,8 @@ let gameOver = false;
 let p1 = "", p2 = "";
 let scoreX = 0, scoreO = 0;
 let roomId = "";
-let gameMode = 3;
-let mode = "single"; // single or multi
+let gameMode = ;
+let mode = ""; // single or multi
 const cpuName = "CPU";
 
 /* ======= On DOM load ======= */
@@ -147,9 +147,11 @@ function cellClick(e) {
 
 /* ===== Apply and render moves ===== */
 function applyMove({ index, player }) {
+console.log('applyMove called for', player, 'at', index);
   if (board[index]) return;
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
+  console.log('cell element:', cell);  // 🚩 Should not be null
   if (cell) {
     cell.textContent = player;
     cell.classList.add("filled");
