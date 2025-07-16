@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
  socket.on("both-ready", ({ p2name }) => {
   console.log("Both players ready. P2:", p2name); // ✅ DEBUG
   p2 = p2name;
+  mySymbol = current === "X" ? "X" : "O";
   finalizeStart();
 });
 
@@ -147,6 +148,7 @@ function cellClick(e) {
 
   // Handle multiplayer mode
   else if (mode === "multi") {
+  if (current !== mySymbol) return; // not your turn
   socket.emit("make-move", {
   index: i,
   player: current,
