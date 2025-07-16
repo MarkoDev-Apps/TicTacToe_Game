@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
   document.getElementById("resetBtn").onclick = () => socket.emit("restart-round", { roomId });
   window.addEventListener("keydown", e => {
-    if (e.key && e.key.toLowerCase() === "r") socket.emit("restart-round", { roomId });
+  if (e.key && e.key.toLowerCase() === "r") socket.emit("restart-round", { roomId });
   });
 
   socket.on("player-ready", () => {
@@ -67,8 +67,12 @@ function startGame() {
   gameMode = parseInt(selectedWinVal.value, 10); // Set 3 or 5
 
   if (mode === "single") {
-    p2 = cpuName;
-    finalizeStart(); // start game immediately
+  p2 = cpuName;
+  roomId = "local";
+  socket.emit("join-room", roomId);
+  finalizeStart();
+}
+// start game immediately
   } else {
     // multiplayer path
     if (!p2) {
@@ -122,9 +126,12 @@ function cellClick(e) {
   if (gameOver || board[i]) return;
 
   // Handle single player mode (human vs CPU)
-  if (mode === "single") {
-    if (current !== "X") return; // Only let player (X) click
-    socket.emit("make-move", { index: i, player: "X", roomId });
+  if (mode === "single" && current === "X") {
+    socket.emit("make-move", {
+  index: i,
+  player: "X",
+  roomId: roomId || "local"
+});
 
     // Let CPU go after a short delay
     setTimeout(() => {
@@ -140,7 +147,11 @@ function cellClick(e) {
 
   // Handle multiplayer mode
   else if (mode === "multi") {
-    socket.emit("make-move", { index: i, player: current, roomId });
+  socket.emit("make-move", {
+  index: i,
+  player: current,
+  roomId: roomId || "local"
+});
   }
 }
 

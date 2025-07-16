@@ -53,10 +53,10 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('make-move', ({ index, player, roomId }) => {
-    console.log('server: received make-move', { index, player, roomId });
-    io.to(roomId).emit('make-move', { index, player });
-  });
+  socket.on("make-move", ({ index, player, roomId }) => {
+  const targetRoom = roomId || "local"; // fallback
+  io.to(targetRoom).emit("make-move", { index, player });
+});
 
   socket.on('restart-round', ({ roomId }) => {
     console.log('server: received restart-round for', roomId);
