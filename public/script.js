@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   finalizeStart();
 });
 
-
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
 });

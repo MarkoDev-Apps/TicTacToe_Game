@@ -20,9 +20,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  socket.on('join-room', (roomId) => {
-    socket.join(roomId);
-    console.log(`${socket.id} joined room: ${roomId}`);
+  socket.on("join-room", ({ roomId, name }) => {
+  socket.join(roomId);
+  console.log(`${socket.id} joined room: ${roomId}`);
 
     if (!roomPlayers[roomId]) roomPlayers[roomId] = [];
 
