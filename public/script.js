@@ -159,7 +159,7 @@ function cellClick(e) {
 /* ===== Apply and render moves ===== */
 function applyMove({ index, player }) {
 console.log('applyMove called for', player, 'at', index);
-  if (board[index]) return;
+  if (mode === "multi" && board[index]) return;
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
   console.log('cell element:', cell);  // 🚩 Should not be null
