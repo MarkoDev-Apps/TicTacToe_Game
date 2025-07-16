@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
   document.getElementById("resetBtn").onclick = () => socket.emit("restart-round", { roomId });
   window.addEventListener("keydown", e => {
-    if (e.key.toLowerCase() === "r") socket.emit("restart-round", { roomId });
+    if (e.key && e.key.toLowerCase() === "r") socket.emit("restart-round", { roomId });
   });
 
   socket.on("player-ready", () => {
