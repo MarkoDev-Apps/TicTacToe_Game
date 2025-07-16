@@ -12,8 +12,8 @@ let gameOver = false;
 let p1 = "", p2 = "";
 let scoreX = 0, scoreO = 0;
 let roomId = "";
-let gameMode = ;
-let mode = ""; // single or multi
+let gameMode = 3;
+let mode = "Single"; // single or multi
 const cpuName = "CPU";
 
 /* ======= On DOM load ======= */
