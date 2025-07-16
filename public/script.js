@@ -71,7 +71,6 @@ function startGame() {
   roomId = "local";
   socket.emit("join-room", roomId);
   finalizeStart();
-}
 // start game immediately
   } else {
     // multiplayer path
