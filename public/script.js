@@ -43,10 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  socket.on("both-ready", ({ p2name }) => {
-    p2 = p2name;
-    finalizeStart();
-  });
+ socket.on("both-ready", ({ p2name }) => {
+  console.log("Both players ready. P2:", p2name); // ✅ DEBUG
+  p2 = p2name;
+  finalizeStart();
+});
+
 
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);

@@ -53,8 +53,9 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("make-move", ({ index, player, roomId }) => {
+socket.on("make-move", ({ index, player, roomId }) => {
   const targetRoom = roomId || "local"; // fallback
+  console.log(`Relaying move to room: ${targetRoom}, index: ${index}, player: ${player}`);
   io.to(targetRoom).emit("make-move", { index, player });
 });
 
