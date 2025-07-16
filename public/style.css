@@ -91,7 +91,6 @@ button {
   margin-top: 10px;
   cursor: pointer;
 }
-
 /* New: Mobile-friendly, centered radio buttons */
 /* Round Toggle Styled Like Buttons */
 .round-toggle {
@@ -127,7 +126,6 @@ button {
 .round-toggle label:hover {
   background-color: #d6d6d6;
 }
-
 /* New: Improved button appearance */
 #startBtn {
   padding: 12px 24px;
@@ -241,7 +239,6 @@ button {
 input:invalid {
   border: 2px solid red;
 }
-
 /* Updated Game Mode Buttons */
 .mode-toggle {
   display: flex;
@@ -271,11 +268,9 @@ input:invalid {
   background-color: #007bff;
   color: #fff;
 }
-
 .mode-toggle label:hover {
   background-color: #d6d6d6;
 }
-
 /* ✅ Game Mode and Round Selection Buttons */
 #mode-buttons, #round-buttons {
   display: flex;
@@ -296,20 +291,17 @@ input:invalid {
   font-size: 16px;
   transition: border-color 0.3s, background-color 0.3s;
 }
-
 .mode-btn:hover,
 .round-btn:hover {
   border-color: #2196f3;
   background-color: #2c2c2c;
 }
-
 .mode-btn.selected,
 .round-btn.selected {
   border-color: #2196f3;
   background-color: #2196f3;
   color: #fff;
 }
-
 /* ✅ Enhance Start Game button */
 #startBtn {
   padding: 12px 24px;
@@ -324,11 +316,9 @@ input:invalid {
   margin-top: 15px;
   font-weight: bold;
 }
-
 #startBtn:hover {
   background-color: #e0e0e0;
 }
-
 /* ✅ Mobile Responsiveness */
 @media (max-width: 600px) {
   #mode-buttons, #round-buttons {
@@ -336,7 +326,6 @@ input:invalid {
     align-items: center;
     gap: 10px;
   }
-
   .mode-btn,
   .round-btn {
     width: 90%;

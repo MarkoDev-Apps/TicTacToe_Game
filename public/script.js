@@ -110,7 +110,7 @@ function buildBoard() {
   for (let i = 0; i < 9; i++) {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.dataset.i = i;
+    cell.dataset.i = i.toString();
     cell.addEventListener("click", cellClick);
     boardEl.appendChild(cell);
   }
@@ -152,10 +152,12 @@ console.log('applyMove called for', player, 'at', index);
   board[index] = player;
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
   console.log('cell element:', cell);  // 🚩 Should not be null
-  if (cell) {
-    cell.textContent = player;
-    cell.classList.add("filled");
-  }
+if (!cell) {
+  console.warn("Cell not found for index:", index);
+  return;
+}
+cell.textContent = player;
+cell.classList.add("filled");
 
   const winCombo = checkWin(player);
   if (winCombo) {
