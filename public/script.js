@@ -14,13 +14,21 @@ const cpuName = "CPU";
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
   document.getElementById("resetBtn").onclick = () => resetGame(true);
+
+  // Restart game with R key
   window.addEventListener("keydown", e => {
     if (e.key?.toLowerCase() === "r") resetGame(true);
+  });
+
+  // Prevent Enter in name input from refreshing the page
+  document.getElementById("p1").addEventListener("keydown", e => {
+    if (e.key === "Enter") e.preventDefault();
   });
 
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
 });
+
 
 /* ====== Start Game ====== */
 function startGame() {
@@ -142,17 +150,21 @@ function resetGame(manual) {
   current = "X";
   gameOver = false;
 
- // Show landing UI again
+  // Reset board
+  boardEl.innerHTML = ""; // ⬅️ Clear board from DOM
   document.getElementById("game").hidden = true;
+
+  // Show landing UI again
   document.getElementById("subtitle").style.display = "block";
   document.getElementById("name-entry").hidden = false;
   document.querySelector(".round-toggle").style.display = "flex";
   document.getElementById("startBtn").style.display = "inline-block";
-  document.getElementById("p1").style.display = "inline-block"; // NEW
+  document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
 
   if (manual) location.reload(); // manual resets force refresh
 }
+
 
 function checkWin(p) {
   const combos = [
