@@ -331,3 +331,10 @@ input:invalid {
     max-width: 300px;
   }
 }
+.cell.filled[data-player="X"] {
+  color: red !important;
+}
+
+.cell.filled[data-player="O"] {
+  color: blue !important;
+}
