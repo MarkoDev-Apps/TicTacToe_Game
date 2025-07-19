@@ -5,106 +5,74 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   padding: 20px;
   box-sizing: border-box;
-  text-align: center;
+  height: 100vh;
+  overflow: hidden;
+  color: #fff;
 }
 
-#game {
+#name-entry, #game {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 #board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  width: 90vw;
-  max-width: 450px;
+  gap: 4px;
+  width: 90vmin;
+  max-width: 360px;
   aspect-ratio: 1 / 1;
-  background-color: #000;
-  margin: 0 auto;
-  touch-action: manipulation;
-}
-
-#board div {
-  background-color: #fff;
-  border: 2px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 20px auto;
 }
 
 .cell {
+  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(2rem, 8vw, 5rem);
+  font-size: clamp(1.5rem, 6vw, 4rem);
   font-weight: bold;
   color: black;
-  background-color: #fff;
-  height: 100%;
-  width: 100%;
-  text-align: center;
-}
-
-.cell:active {
-  transform: scale(0.95);
-  background-color: #ddd;
+  cursor: pointer;
+  user-select: none;
 }
 
 .cell.filled {
   cursor: default;
   pointer-events: none;
-  background-color: #f5f5f5;
 }
 
-.cell.filled[data-player="X"] {
-  color: red !important;
+#info p {
+  margin: 4px 0;
 }
 
-.cell.filled[data-player="O"] {
-  color: blue !important;
-}
-
-#info {
-  color: white;
-  margin-top: 10px;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-input,
-button {
+input, button {
   font-size: 1rem;
 }
 
 input {
   padding: 8px;
-  margin: 5px;
+  margin: 8px auto;
+  display: block;
+  width: calc(100% - 32px);
+  max-width: 300px;
 }
 
 button {
   padding: 10px 20px;
-  margin-top: 10px;
+  margin: 10px;
   cursor: pointer;
-}
-
-#startBtn {
-  padding: 12px 24px;
-  font-size: 18px;
   border: none;
   border-radius: 24px;
   background-color: #f0f0f0;
   color: #007bff;
-  cursor: pointer;
-  width: 90%;
-  max-width: 300px;
-  margin-top: 15px;
-  font-weight: bold;
+  transition: background-color 0.2s ease;
 }
 
-#startBtn:hover {
+button:hover {
   background-color: #e0e0e0;
 }
 
@@ -113,118 +81,72 @@ button {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 90vw;
-  max-width: 450px;
-  height: calc(100% + 100px);
   pointer-events: none;
   display: none;
 }
 
-#welcome-msg {
-  text-align: center;
-  font-size: 36px;
+.fade-text {
+  color: white;
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #ffffff;
-  margin-top: 20px;
-  animation: welcomeBounce 3s ease-in-out;
+  margin-top: 15px;
+  opacity: 0;
+  animation: bounce-horizontal 3s ease-in-out forwards;
 }
 
-@keyframes welcomeBounce {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-5px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+@keyframes bounce-horizontal {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { transform: translateX(0%); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
 }
 
-#footer {
-  position: fixed;
-  bottom: 10px;
-  width: 100%;
-  text-align: center;
-  font-weight: bold;
-  color: #ffffff;
-  font-size: 0.9rem;
-  animation: welcomeBounce 3s ease-in-out;
-}
-
-input:invalid {
-  border: 2px solid red;
-}
-
-/* Game mode buttons (optional CPU/difficulty modes) */
-.mode-toggle {
+.round-toggle {
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin: 16px 0;
 }
 
-.mode-toggle input[type="radio"] {
+.round-toggle input[type="radio"] {
   display: none;
 }
 
-.mode-toggle label {
-  display: inline-block;
-  padding: 12px 24px;
-  font-size: 18px;
-  font-weight: bold;
-  border: none;
+.round-toggle label {
+  padding: 8px 16px;
   border-radius: 24px;
   background-color: #f0f0f0;
-  color: #007bff;
+  color: #212121;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease;
 }
 
-.mode-toggle input[type="radio"]:checked + label {
+.round-toggle input[type="radio"]:checked + label {
   background-color: #007bff;
+  color: white;
+}
+
+#fullscreenBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 12px;
+  font-size: 20px;
+  border-radius: 50%;
+  background: #444;
   color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  transition: background-color 0.2s ease;
 }
 
-.mode-toggle label:hover {
-  background-color: #d6d6d6;
+#fullscreenBtn:hover {
+  background-color: #666;
 }
 
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-    font-size: 14px;
-  }
-
-  #game {
-    width: 100%;
-  }
-
-  input,
-  button {
-    width: 100%;
-    max-width: 300px;
-    box-sizing: border-box;
-  }
-
-  #board {
-    width: 100%;
-    max-width: 300px;
-    gap: 4px;
-  }
-
-  #mode-buttons,
-  #round-buttons {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .mode-btn,
-  .round-btn {
-    width: 90%;
-    max-width: 300px;
-  }
+#footer {
+  margin-top: auto;
+  padding: 8px;
+  font-size: 0.9rem;
 }

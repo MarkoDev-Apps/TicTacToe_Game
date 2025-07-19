@@ -8,27 +8,20 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-
-  <h1 id="welcome-msg">Welcome to TicTacToe Game 🎮</h1>
-
   <div id="name-entry">
     <h2>Enter Your Name</h2>
     <input id="p1" placeholder="Your name" maxlength="15" required />
-
-    <!-- ✅ Win Condition Selection -->
-    <div id="round-select" class="round-toggle">
+    <div class="round-toggle">
       <input type="radio" name="modeWin" id="round-3" value="3" checked>
       <label for="round-3">First to 3 Wins</label>
       <input type="radio" name="modeWin" id="round-5" value="5">
       <label for="round-5">First to 5 Wins</label>
     </div>
-
     <button id="startBtn"><strong>Start Game</strong></button>
   </div>
 
   <div id="game" hidden>
     <div id="board"></div>
-    <canvas id="overlay"></canvas>
     <div id="info">
       <p id="names"></p>
       <p id="turn"></p>
@@ -38,9 +31,10 @@
     <p id="winMessage" class="fade-text"></p>
   </div>
 
-  <!-- Audio Files -->
+  <canvas id="overlay"></canvas>
   <audio id="winSound" src="sounds/mixkit-cheering-crowd-loud-whistle-610.mp3"></audio>
   <audio id="drawSound" src="sounds/mixkit-cartoon-failure-piano-473.mp3"></audio>
+  <button id="fullscreenBtn" title="Toggle Fullscreen">🔳</button>
 
   <footer id="footer">
     &copy; 2025 Marko TicTacToe Game. All rights reserved.
