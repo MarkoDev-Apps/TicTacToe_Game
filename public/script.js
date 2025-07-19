@@ -170,7 +170,8 @@ if (!cell) {
   return;
 }
 cell.textContent = player;
-cell.classList.add("filled");
+cell.setAttribute("style", "color: red; font-size: 3rem; font-weight: bold;");
+//cell.classList.add("filled");
 
   const winCombo = checkWin(player);
   if (winCombo) {

@@ -44,9 +44,9 @@ body {
 }
 
 .cell {
-  font-size: clamp(2rem, 8vw, 5rem); /* Responsive, bold text */
-  font-weight: bold;
-  color: #e53935; /* Red color for both X and O */
+  font-size: clamp(2rem, 8vw, 5rem) !important; /* Responsive, bold text */
+  font-weight: bold !important;
+  color: #e53935 !important; /* Red color for both X and O */
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
