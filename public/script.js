@@ -52,6 +52,7 @@ function startGame() {
   document.getElementById("startBtn").style.display = "none";
 
   document.getElementById("game").hidden = false;
+  document.getElementById("resetBtn").style.display = "inline-block";
 
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
@@ -162,6 +163,7 @@ function resetGame(manual) {
 document.getElementById("turn").textContent = "";
 document.getElementById("scores").textContent = "";
   document.getElementById("game").hidden = true;
+  document.getElementById("resetBtn").style.display = "none";
   document.getElementById("winMessage").textContent = "";
 
   // Show landing UI again
