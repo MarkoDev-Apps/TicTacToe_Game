@@ -77,11 +77,10 @@ function buildBoard() {
 
       setTimeout(() => {
         if (!gameOver) {
-          const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
-          if (open.length) {
-            const cpuIdx = open[Math.floor(Math.random() * open.length)];
+          const cpuIdx = getBestMove();
+            if (cpuIdx !== null) {
             socket.emit("make-move", { index: cpuIdx, player: "O" });
-          }
+            }
         }
       }, 400);
     });
@@ -177,6 +176,44 @@ document.getElementById("scores").textContent = "";
   if (manual) location.reload(); // manual resets force refresh
 }
 
+function getBestMove() {
+  // Try to win
+  for (let i = 0; i < 9; i++) {
+    if (board[i] === null) {
+      board[i] = "O";
+      if (checkWin("O")) {
+        board[i] = null;
+        return i;
+      }
+      board[i] = null;
+    }
+  }
+
+  // Try to block player
+  for (let i = 0; i < 9; i++) {
+    if (board[i] === null) {
+      board[i] = "X";
+      if (checkWin("X")) {
+        board[i] = null;
+        return i;
+      }
+      board[i] = null;
+    }
+  }
+
+  // Take center
+  if (board[4] === null) return 4;
+
+  // Take a corner
+  const corners = [0, 2, 6, 8].filter(i => board[i] === null);
+  if (corners.length > 0) return corners[Math.floor(Math.random() * corners.length)];
+
+  // Take a side
+  const sides = [1, 3, 5, 7].filter(i => board[i] === null);
+  if (sides.length > 0) return sides[Math.floor(Math.random() * sides.length)];
+
+  return null;
+}
 
 function checkWin(p) {
   const combos = [
