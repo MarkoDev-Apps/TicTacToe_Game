@@ -152,7 +152,11 @@ function resetGame(manual) {
 
   // Reset board
   boardEl.innerHTML = ""; // ⬅️ Clear board from DOM
+  document.getElementById("names").textContent = "";
+document.getElementById("turn").textContent = "";
+document.getElementById("scores").textContent = "";
   document.getElementById("game").hidden = true;
+  document.getElementById("winMessage").textContent = "";
 
   // Show landing UI again
   document.getElementById("subtitle").style.display = "block";
