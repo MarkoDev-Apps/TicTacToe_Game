@@ -17,8 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Restart game with R key
   window.addEventListener("keydown", e => {
-    if (e.key?.toLowerCase() === "r") resetGame(true);
-  });
+  const gameVisible = !document.getElementById("game").hidden;
+  if (gameVisible && e.key?.toLowerCase() === "r") {
+    resetGame(true);
+  }
+});
 
   // Prevent Enter in name input from refreshing the page
   document.getElementById("p1").addEventListener("keydown", e => {
