@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Enter") e.preventDefault();
   });
 
+  // 🌟 Add floating background X and O
+  spawnFloatingSymbols();
+
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
 });
@@ -190,4 +193,20 @@ function animateWin(msg) {
     el.classList.remove("fade-text");
     el.textContent = "";
   }, 3000);
+}
+
+function spawnFloatingSymbols() {
+  const container = document.getElementById("floating-background");
+  const symbols = ["X", "O"];
+
+  for (let i = 0; i < 30; i++) {
+    const span = document.createElement("span");
+    span.className = "floating-symbol";
+    span.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    span.style.left = `${Math.random() * 100}%`;
+    span.style.top = `${Math.random() * 100}%`;
+    span.style.fontSize = `${Math.random() * 2 + 1}rem`;
+    span.style.animationDuration = `${Math.random() * 15 + 10}s`;
+    container.appendChild(span);
+  }
 }
