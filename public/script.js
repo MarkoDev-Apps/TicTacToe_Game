@@ -33,6 +33,7 @@ function startGame() {
   // Hide inputs and button
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
+  document.getElementById("p1").style.display = "none"; // NEW
   document.querySelector(".round-toggle").style.display = "none";
   document.getElementById("startBtn").style.display = "none";
 
@@ -141,13 +142,16 @@ function resetGame(manual) {
   current = "X";
   gameOver = false;
 
-  if (manual) {
-    document.getElementById("p1").value = "";
-    location.reload(); // simpler reset if manually triggered
-  } else {
-    buildBoard();
-    updateInfo();
-  }
+ // Show landing UI again
+  document.getElementById("game").hidden = true;
+  document.getElementById("subtitle").style.display = "block";
+  document.getElementById("name-entry").hidden = false;
+  document.querySelector(".round-toggle").style.display = "flex";
+  document.getElementById("startBtn").style.display = "inline-block";
+  document.getElementById("p1").style.display = "inline-block"; // NEW
+  document.getElementById("p1").value = "";
+
+  if (manual) location.reload(); // manual resets force refresh
 }
 
 function checkWin(p) {
