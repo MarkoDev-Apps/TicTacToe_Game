@@ -13,9 +13,9 @@ const cpuName = "CPU";
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = () => socket.emit("restart-round");
+  document.getElementById("resetBtn").onclick = () => resetGame(true);
   window.addEventListener("keydown", e => {
-    if (e.key?.toLowerCase() === "r") socket.emit("restart-round");
+    if (e.key?.toLowerCase() === "r") resetGame(true);
   });
 
   socket.on("make-move", applyMove);
@@ -30,13 +30,18 @@ function startGame() {
     return;
   }
 
+  // Hide inputs and button
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
+  document.querySelector(".round-toggle").style.display = "none";
+  document.getElementById("startBtn").style.display = "none";
+
   document.getElementById("game").hidden = false;
 
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
   buildBoard();
+  updateInfo();
 }
 
 /* ====== Build Board ====== */
@@ -54,7 +59,6 @@ function buildBoard() {
       if (gameOver || board[i]) return;
       socket.emit("make-move", { index: i, player: "X" });
 
-      // CPU move
       setTimeout(() => {
         if (!gameOver) {
           const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
@@ -80,11 +84,28 @@ function applyMove({ index, player }) {
   cell.dataset.player = player;
 
   const winCombo = checkWin(player);
+  const p1Name = document.getElementById("p1").value || "Player";
+
   if (winCombo) {
     gameOver = true;
-    player === "X" ? scoreX++ : scoreO++;
+    if (player === "X") scoreX++;
+    else scoreO++;
+
     try { winSound.play(); } catch {}
-    animateWin(`🏆 ${player === "X"?p1: cpuName} wins! 🏆`);
+    const winnerName = player === "X" ? p1Name : cpuName;
+    animateWin(`🏆 ${winnerName} wins! 🏆`);
+
+    // Check for match win
+    setTimeout(() => {
+      if (scoreX === gameMode || scoreO === gameMode) {
+        const finalWinner = scoreX === gameMode ? p1Name : cpuName;
+        alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
+        resetGame(false);
+      } else {
+        socket.emit("restart-round");
+      }
+    }, 3000);
+
     return;
   }
 
@@ -92,6 +113,8 @@ function applyMove({ index, player }) {
     gameOver = true;
     try { drawSound.play(); } catch {}
     animateWin("It's a draw!");
+
+    setTimeout(() => socket.emit("restart-round"), 3000);
     return;
   }
 
@@ -111,6 +134,22 @@ function resetRound() {
   updateInfo();
 }
 
+function resetGame(manual) {
+  board.fill(null);
+  scoreX = 0;
+  scoreO = 0;
+  current = "X";
+  gameOver = false;
+
+  if (manual) {
+    document.getElementById("p1").value = "";
+    location.reload(); // simpler reset if manually triggered
+  } else {
+    buildBoard();
+    updateInfo();
+  }
+}
+
 function checkWin(p) {
   const combos = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -127,5 +166,5 @@ function animateWin(msg) {
   setTimeout(() => {
     el.classList.remove("fade-text");
     el.textContent = "";
-  }, 3000); // 🕒 winner message shows for 3 seconds
+  }, 3000);
 }

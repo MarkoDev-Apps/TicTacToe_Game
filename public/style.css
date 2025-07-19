@@ -179,3 +179,12 @@ button:hover {
     padding: 10px 20px;
   }
 }
+
+#startBtn {
+  margin-top: 10px;
+}
+
+.round-toggle {
+  justify-content: center;
+}
+
