@@ -84,7 +84,7 @@ function applyMove({ index, player }) {
     gameOver = true;
     player === "X" ? scoreX++ : scoreO++;
     try { winSound.play(); } catch {}
-    animateWin(`🏆 ${player === "X" ? "You" : cpuName} wins! 🏆`);
+    animateWin(`🏆 ${player === "X"?p1: cpuName} wins! 🏆`);
     return;
   }
 
