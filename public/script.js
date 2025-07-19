@@ -2,6 +2,7 @@ const socket = io();
 const boardEl = document.getElementById("board");
 const winSound = document.getElementById("winSound");
 const drawSound = document.getElementById("drawSound");
+const winMessage = document.getElementById("winMessage");
 
 let board = Array(9).fill(null);
 let current = "X";
@@ -26,16 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
 function startGame() {
   const name = document.getElementById("p1").value.trim();
   if (!name) {
-    document.getElementById("p1").style.border = "2px solid red";
+    alert("Please enter your name!");
     return;
   }
 
+  document.getElementById("name-entry").style.display = "none";
   document.getElementById("subtitle").style.display = "none";
-  document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
+  document.getElementById("names").textContent = `${name} (X) vs ${cpuName} (O)`;
 
-  const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
-  gameMode = parseInt(selectedMode, 10);
+  const winMode = document.querySelector("input[name='modeWin']:checked");
+  gameMode = parseInt(winMode?.value || 3);
+
   buildBoard();
 }
 
@@ -54,7 +57,6 @@ function buildBoard() {
       if (gameOver || board[i]) return;
       socket.emit("make-move", { index: i, player: "X" });
 
-      // CPU move
       setTimeout(() => {
         if (!gameOver) {
           const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
@@ -63,10 +65,12 @@ function buildBoard() {
             socket.emit("make-move", { index: cpuIdx, player: "O" });
           }
         }
-      }, 400);
+      }, 500);
     });
     boardEl.appendChild(cell);
   }
+
+  updateInfo();
 }
 
 /* ====== Apply Moves ====== */
@@ -84,7 +88,8 @@ function applyMove({ index, player }) {
     gameOver = true;
     player === "X" ? scoreX++ : scoreO++;
     try { winSound.play(); } catch {}
-    animateWin(`🏆 ${player === "X" ? "You" : cpuName} wins! 🏆`);
+    animateWin(`🏆 ${player === "X" ? "You" : cpuName} win! 🏆`);
+    updateInfo();
     return;
   }
 
@@ -99,16 +104,15 @@ function applyMove({ index, player }) {
   updateInfo();
 }
 
-function updateInfo() {
-  const name = document.getElementById("p1").value || "Player";
-  document.getElementById("names").textContent = `${name} (X) vs CPU (O)`;
-  document.getElementById("turn").textContent = `${name}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${name}: ${scoreX} | CPU: ${scoreO} | First to ${gameMode}`;
-}
-
+/* ====== Helpers ====== */
 function resetRound() {
   buildBoard();
-  updateInfo();
+}
+
+function updateInfo() {
+  const name = document.getElementById("p1").value.trim();
+  document.getElementById("turn").textContent = `${name}'s turn (${current})`;
+  document.getElementById("scores").textContent = `${name}: ${scoreX} | ${cpuName}: ${scoreO} | First to ${gameMode}`;
 }
 
 function checkWin(p) {
@@ -121,11 +125,11 @@ function checkWin(p) {
 }
 
 function animateWin(msg) {
-  const el = document.getElementById("winMessage");
-  el.textContent = msg;
-  el.classList.add("fade-text");
+  winMessage.textContent = msg;
+  winMessage.classList.add("fade-text");
+
   setTimeout(() => {
-    el.classList.remove("fade-text");
-    el.textContent = "";
-  }, 3000); // 🕒 winner message shows for 3 seconds
+    winMessage.classList.remove("fade-text");
+    winMessage.textContent = "";
+  }, 3000);
 }
