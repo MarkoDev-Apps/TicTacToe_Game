@@ -170,6 +170,7 @@ document.getElementById("scores").textContent = "";
   document.getElementById("name-entry").hidden = false;
   document.querySelector(".round-toggle").style.display = "flex";
   document.getElementById("startBtn").style.display = "inline-block";
+  document.getElementById("resetBtn").style.display = "none";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
 
@@ -189,30 +190,34 @@ function getBestMove() {
     }
   }
 
-  // Try to block player
+  // Try to block ONLY if player is about to win (medium defense)
+  let dangerMoves = [];
   for (let i = 0; i < 9; i++) {
     if (board[i] === null) {
       board[i] = "X";
       if (checkWin("X")) {
-        board[i] = null;
-        return i;
+        dangerMoves.push(i);
       }
       board[i] = null;
     }
   }
 
-  // Take center
+  if (dangerMoves.length === 1) {
+    return dangerMoves[0]; // Only block if one clear danger
+  }
+
+  // Prefer center
   if (board[4] === null) return 4;
 
-  // Take a corner
+  // Then corners
   const corners = [0, 2, 6, 8].filter(i => board[i] === null);
-  if (corners.length > 0) return corners[Math.floor(Math.random() * corners.length)];
+  if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
 
-  // Take a side
+  // Then sides
   const sides = [1, 3, 5, 7].filter(i => board[i] === null);
-  if (sides.length > 0) return sides[Math.floor(Math.random() * sides.length)];
+  if (sides.length) return sides[Math.floor(Math.random() * sides.length)];
 
-  return null;
+  return null; // Fallback
 }
 
 function checkWin(p) {

@@ -199,6 +199,10 @@ button:hover {
   margin-top: 10px;
 }
 
+#resetBtn {
+  display: none;
+}
+
 .round-toggle {
   justify-content: center;
 }
