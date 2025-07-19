@@ -1,18 +1,36 @@
-/* ========== Global Setup ========== */
 body {
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  font-family: sans-serif;
-  background: #212121;
+  padding: 0;
+  background: #1e1e1e;
+  color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-  text-align: center;
   min-height: 100vh;
 }
 
-/* ===== Slide-In Animation ===== */
+#welcome-text {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-top: 30px;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slideInCenter 1.2s ease-out forwards;
+}
+
+#subtitle {
+  font-size: 1.3rem;
+  margin: 10px 0 25px;
+  color: white;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slideInCenter 1.2s ease-out forwards;
+  animation-delay: 0.4s;
+  animation-fill-mode: forwards;
+}
+
 @keyframes slideInCenter {
   to {
     opacity: 1;
@@ -20,234 +38,144 @@ body {
   }
 }
 
-/* ===== Welcome & Subtitle Headings ===== */
-#welcome-text, #subtitle {
-  font-size: 2.2rem;
-  color: #ffffff;
-  margin: 0;
-  opacity: 0;
-  transform: translateX(-100%);
-  animation: slideInCenter 1.2s ease-out forwards;
-}
-
-/* Delay subtitle animations slightly */
-#subtitle {
-  font-size: 1.6rem;
-  animation-delay: 0.7s;
-}
-
-/* ===== Name Entry & Containers ===== */
-#name-entry, #game {
-  text-align: center;
-  margin-top: 20px;
-  width: 100%;
-  max-width: 360px;
-}
-
-/* ===== Board ===== */
-#board {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  width: 90vw;
-  max-width: 360px;
-  aspect-ratio: 1 / 1;
-  background-color: #000;
-  margin: 20px auto;
-}
-
-/* ===== Cells ===== */
-.cell {
-  background-color: #fff;
+#name-entry {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: clamp(1.8rem, 7vw, 4rem);
-  font-weight: bold;
-  color: #000;
-  cursor: pointer;
-  user-select: none;
-  aspect-ratio: 1 / 1;
-  border: 2px solid #000;
-}
-
-.cell:active {
-  transform: scale(0.95);
-  background-color: #ddd;
-}
-
-.cell.filled {
-  cursor: default;
-  pointer-events: none;
-  background-color: #f5f5f5;
-}
-
-.cell.filled[data-player="X"] {
-  color: #e53935;
-}
-
-.cell.filled[data-player="O"] {
-  color: #1e88e5;
-}
-
-/* ===== Info (names, turn, scores) ===== */
-#info {
-  color: #fff;
+  gap: 12px;
   margin-top: 10px;
-  font-size: 0.95rem;
-  line-height: 1.5;
 }
 
-/* ===== Buttons / Inputs ===== */
-input, button {
+#name-entry input[type="text"] {
+  padding: 10px;
   font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  width: 250px;
+  transition: border 0.3s;
 }
 
-input {
-  width: 100%;
-  padding: 8px;
-  margin: 5px 0;
-  box-sizing: border-box;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  background: #212121;
-  color: #fff;
+#name-entry input[type="text"]:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
-input::placeholder {
-  color: #bbb;
+.round-toggle {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.round-toggle input[type="radio"] {
+  display: none;
+}
+
+.round-toggle label {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  user-select: none;
+}
+
+.round-toggle input[type="radio"]:checked + label {
+  background: #007bff;
+  color: white;
 }
 
 button {
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-button#startBtn {
-  padding: 12px 24px;
-  font-size: 1.1rem;
+  padding: 12px 30px;
+  font-size: 1rem;
   border: none;
-  border-radius: 24px;
   background-color: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
   color: #007bff;
-  width: 90%;
-  max-width: 300px;
+  transition: background 0.3s ease;
 }
 
-button#startBtn:hover {
+button:hover {
   background-color: #e0e0e0;
 }
 
-button#resetBtn {
-  margin-top: 15px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 4px;
-  background: #f0f0f0;
-  color: #007bff;
-}
-
-button#resetBtn:hover {
-  background: #e0e0e0;
-}
-
-/* ===== Toggle Buttons ===== */
-.round-toggle, .mode-toggle {
+#game {
+  margin-top: 20px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(3, 90px);
+  grid-template-rows: repeat(3, 90px);
+  gap: 5px;
+  margin: 15px 0;
+}
+
+.cell {
+  width: 90px;
+  height: 90px;
+  background: white;
+  color: black;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-}
-
-.round-toggle input[type="radio"],
-.mode-toggle input[type="radio"] {
-  display: none;
-}
-
-.round-toggle label,
-.mode-toggle label {
-  padding: 10px 20px;
-  font-size: 1rem;
+  font-size: 2.2rem;
   font-weight: bold;
-  border-radius: 24px;
-  background-color: #f0f0f0;
-  color: #007bff;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: background 0.3s;
 }
 
-.round-toggle input[type="radio"]:checked + label,
-.mode-toggle input[type="radio"]:checked + label {
-  background-color: #007bff;
-  color: #fff;
+.cell[data-player="X"] {
+  color: red;
 }
 
-.round-toggle label:hover,
-.mode-toggle label:hover {
-  background-color: #d6d6d6;
+.cell[data-player="O"] {
+  color: blue;
 }
 
-/* ===== Fade‑text for win message ===== */
-.fade-text {
-  color: white;
+#winMessage {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-top: 15px;
-  opacity: 0;
-  transition: opacity 0.3s ease-out;
+  margin: 10px 0;
 }
 
-.fade-text.visible {
-  opacity: 1;
+.fade-text {
+  animation: fadeInOut 3s ease-in-out;
 }
 
-/* ===== Canvas Overlay ===== */
-#overlay {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90vw;
-  max-width: 360px;
-  height: calc(90vw + 100px);
-  max-height: calc(360px + 100px);
-  pointer-events: none;
-  display: none;
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-/* ===== Footer ===== */
 #footer {
   margin-top: auto;
-  width: 100%;
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #fff;
-  padding: 10px 0;
+  padding: 20px 0;
+  font-size: 0.9rem;
+  color: #aaa;
 }
 
-/* ===== Invalid Input ===== */
-input:invalid {
-  border: 2px solid red;
-}
-
-/* ===== Mobile ===== */
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-    font-size: 14px;
-  }
-
+/* Responsive tweak */
+@media (max-height: 700px) {
   #board {
-    width: 100%;
-    max-width: 300px;
-    gap: 3px;
+    grid-template-columns: repeat(3, 75px);
+    grid-template-rows: repeat(3, 75px);
   }
 
-  button#startBtn, button#resetBtn {
-    width: 90%;
-    max-width: 260px;
+  .cell {
+    width: 75px;
+    height: 75px;
+    font-size: 2rem;
+  }
+
+  button {
+    padding: 10px 20px;
   }
 }
