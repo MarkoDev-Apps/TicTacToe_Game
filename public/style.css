@@ -35,18 +35,6 @@ body {
   touch-action: manipulation;
 }
 
-#board div {
-  background-color: #fff;
-  border: 2px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(2rem, 8vw, 5rem);
-  font-weight: bold;
-  color: #e53935;
-  cursor: pointer;
-}
-
 .cell {
   font-size: clamp(2rem, 8vw, 5rem); /* Responsive, bold text */
   font-weight: bold;
