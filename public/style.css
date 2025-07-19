@@ -48,9 +48,9 @@ body {
 }
 
 .cell {
-  font-size: 6vw;
-  color: #e53935;
-  max-font-size: 60px;
+  font-size: clamp(2rem, 8vw, 5rem); /* Responsive, bold text */
+  font-weight: bold;
+  color: #e53935; /* Red color for both X and O */
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
@@ -58,6 +58,7 @@ body {
   cursor: pointer;
   user-select: none;
   aspect-ratio: 1 / 1;
+  border: 2px solid black;
 }
 
 .cell:active {
@@ -68,6 +69,8 @@ body {
 .cell.filled {
   cursor: default;
   pointer-events: none;
+  /* Optional visual cue */
+  background-color: #f5f5f5;
 }
 
 #info {
