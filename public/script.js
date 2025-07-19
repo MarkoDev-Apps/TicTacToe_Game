@@ -169,9 +169,11 @@ if (!cell) {
   console.warn("Cell not found for index:", index);
   return;
 }
+
 cell.textContent = player;
-cell.classList.add("filled");
-cell.dataset.player = player;  // Add this line to enable per-player styling
+cell.style.fontSize = "clamp(2rem, 8vw, 5rem)";
+cell.style.fontWeight = "bold";
+cell.style.color = player === "X" ? "#e53935" : "#1e88e5"; // red for X, blue for O
 
   const winCombo = checkWin(player);
   if (winCombo) {
