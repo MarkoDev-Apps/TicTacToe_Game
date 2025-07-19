@@ -12,16 +12,7 @@ body {
   min-height: 100vh;
 }
 
-/* ===== Welcome Message Animation ===== */
-#welcome-text {
-  font-size: 2.2rem;
-  color: #ffffff;
-  margin-bottom: 10px;
-  opacity: 0;
-  transform: translateX(-100%);
-  animation: slideInCenter 1.2s ease-out forwards;
-}
-
+/* ===== Slide-In Animation ===== */
 @keyframes slideInCenter {
   to {
     opacity: 1;
@@ -29,15 +20,31 @@ body {
   }
 }
 
-/* === Name Entry & Component Containers === */
+/* ===== Welcome & Subtitle Headings ===== */
+#welcome-text, #subtitle {
+  font-size: 2.2rem;
+  color: #ffffff;
+  margin: 0;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slideInCenter 1.2s ease-out forwards;
+}
+
+/* Delay subtitle animations slightly */
+#subtitle {
+  font-size: 1.6rem;
+  animation-delay: 0.7s;
+}
+
+/* ===== Name Entry & Containers ===== */
 #name-entry, #game {
   text-align: center;
   margin-top: 20px;
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;
 }
 
-/* === Tic‑Tac‑Toe Board === */
+/* ===== Board ===== */
 #board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -46,16 +53,16 @@ body {
   max-width: 360px;
   aspect-ratio: 1 / 1;
   background-color: #000;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 
-/* === Cells === */
+/* ===== Cells ===== */
 .cell {
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(2rem, 8vw, 5rem);
+  font-size: clamp(1.8rem, 7vw, 4rem);
   font-weight: bold;
   color: #000;
   cursor: pointer;
@@ -83,15 +90,15 @@ body {
   color: #1e88e5;
 }
 
-/* === Info section (names, turn, scores) === */
+/* ===== Info (names, turn, scores) ===== */
 #info {
   color: #fff;
   margin-top: 10px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
-/* === Buttons, inputs & toggles === */
+/* ===== Buttons / Inputs ===== */
 input, button {
   font-size: 1rem;
 }
@@ -101,22 +108,28 @@ input {
   padding: 8px;
   margin: 5px 0;
   box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  background: #212121;
+  color: #fff;
+}
+
+input::placeholder {
+  color: #bbb;
 }
 
 button {
-  padding: 10px 20px;
   margin-top: 10px;
   cursor: pointer;
 }
 
 button#startBtn {
   padding: 12px 24px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   border: none;
   border-radius: 24px;
   background-color: #f0f0f0;
   color: #007bff;
-  cursor: pointer;
   width: 90%;
   max-width: 300px;
 }
@@ -125,7 +138,7 @@ button#startBtn:hover {
   background-color: #e0e0e0;
 }
 
-#resetBtn {
+button#resetBtn {
   margin-top: 15px;
   padding: 10px 20px;
   font-size: 1rem;
@@ -135,11 +148,11 @@ button#startBtn:hover {
   color: #007bff;
 }
 
-#resetBtn:hover {
+button#resetBtn:hover {
   background: #e0e0e0;
 }
 
-/* === Toggle Buttons Styling === */
+/* ===== Toggle Buttons ===== */
 .round-toggle, .mode-toggle {
   display: flex;
   justify-content: center;
@@ -155,8 +168,7 @@ button#startBtn:hover {
 
 .round-toggle label,
 .mode-toggle label {
-  display: inline-block;
-  padding: 12px 24px;
+  padding: 10px 20px;
   font-size: 1rem;
   font-weight: bold;
   border-radius: 24px;
@@ -177,7 +189,7 @@ button#startBtn:hover {
   background-color: #d6d6d6;
 }
 
-/* === Fade‑text for win animation === */
+/* ===== Fade‑text for win message ===== */
 .fade-text {
   color: white;
   font-size: 1.5rem;
@@ -191,7 +203,7 @@ button#startBtn:hover {
   opacity: 1;
 }
 
-/* === Canvas overlay for win line === */
+/* ===== Canvas Overlay ===== */
 #overlay {
   position: absolute;
   top: 0;
@@ -205,7 +217,7 @@ button#startBtn:hover {
   display: none;
 }
 
-/* === Footer === */
+/* ===== Footer ===== */
 #footer {
   margin-top: auto;
   width: 100%;
@@ -216,12 +228,12 @@ button#startBtn:hover {
   padding: 10px 0;
 }
 
-/* === Input invalid === */
+/* ===== Invalid Input ===== */
 input:invalid {
   border: 2px solid red;
 }
 
-/* === Mobile === */
+/* ===== Mobile ===== */
 @media (max-width: 600px) {
   body {
     padding: 10px;
@@ -234,7 +246,7 @@ input:invalid {
     gap: 3px;
   }
 
-  button#startBtn, #resetBtn {
+  button#startBtn, button#resetBtn {
     width: 90%;
     max-width: 260px;
   }
