@@ -206,18 +206,22 @@ function getBestMove() {
     return dangerMoves[0]; // Only block if one clear danger
   }
 
-  // Prefer center
-  if (board[4] === null) return 4;
+  const allOpen = board
+  .map((v, i) => v === null ? i : null)
+  .filter(i => i !== null);
 
-  // Then corners
-  const corners = [0, 2, 6, 8].filter(i => board[i] === null);
-  if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+// 30% chance to choose center if it's free
+if (allOpen.includes(4) && Math.random() < 0.3) {
+  return 4;
+}
 
-  // Then sides
-  const sides = [1, 3, 5, 7].filter(i => board[i] === null);
-  if (sides.length) return sides[Math.floor(Math.random() * sides.length)];
+// Otherwise pick randomly from remaining open spots
+const available = allOpen.filter(i => i !== 4);
+if (available.length) {
+  return available[Math.floor(Math.random() * available.length)];
+}
 
-  return null; // Fallback
+return null; // Fallback
 }
 
 function checkWin(p) {
