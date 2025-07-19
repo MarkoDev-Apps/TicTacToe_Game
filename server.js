@@ -2,78 +2,34 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
-const rooms = {};
-const roomPlayers = {};
 
-const app = express(); // ✅ Make sure this line comes first
+const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "play.markotictoegame.com", // Replace with your actual frontend domain
+    origin: "https://play.markotictoegame.com", // Make sure this matches your domain
     methods: ["GET", "POST"]
   }
 });
 
-// ✅ Serve static files from the public directory
+// Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Socket.IO logic
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log(`User connected: ${socket.id}`);
 
-  socket.on("join-room", ({ roomId, name }) => {
-  socket.join(roomId);
-  console.log(`${socket.id} joined room: ${roomId}`);
-
-    if (!roomPlayers[roomId]) roomPlayers[roomId] = [];
-
-    // Prevent duplicates
-    if (!roomPlayers[roomId].includes(socket.id)) {
-      roomPlayers[roomId].push(socket.id);
-    }
-
-    // Let the joining client know join was successful
-    socket.emit('join-success');
+  socket.on("make-move", ({ index, player }) => {
+    // Just emit to the current socket (self-contained gameplay)
+    socket.emit("make-move", { index, player });
   });
 
-  socket.on('player-ready', ({ roomId, name }) => {
-    socket.name = name;
-
-    // Store name under socket ID
-    if (!rooms[roomId]) rooms[roomId] = {};
-    rooms[roomId][socket.id] = name;
-
-    // If both players are now ready
-    if (Object.keys(rooms[roomId]).length === 2) {
-      const otherId = Object.keys(rooms[roomId]).find(id => id !== socket.id);
-      const otherName = rooms[roomId][otherId];
-
-      // Send name to the other player
-      io.to(otherId).emit('both-ready', { p2name: name });
-      io.to(socket.id).emit('both-ready', { p2name: otherName });
-    }
-  });
-
-socket.on("make-move", ({ index, player, roomId }) => {
-  const targetRoom = roomId || "local"; // fallback
-  console.log(`Relaying move to room: ${targetRoom}, index: ${index}, player: ${player}`);
-  io.to(targetRoom).emit("make-move", { index, player });
-});
-
-  socket.on('restart-round', ({ roomId }) => {
-    console.log('server: received restart-round for', roomId);
-    io.to(roomId).emit('restart-round');
-  });
-
-  socket.on('disconnecting', () => {
-    Object.keys(socket.rooms)
-      .filter(r => r !== socket.id)
-      .forEach(roomId => {
-        io.to(roomId).emit('player-left');
-        delete rooms[roomId]?.[socket.id];
-        roomPlayers[roomId] = roomPlayers[roomId]?.filter(id => id !== socket.id);
-      });
+  socket.on("restart-round", () => {
+    socket.emit("restart-round");
   });
 });
 
-const PORT = process.env.PORT||3000;
-server.listen(PORT,()=>console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

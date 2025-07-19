@@ -1,4 +1,4 @@
-/* ========== setup ========== */
+/* ====== Setup & Globals ====== */
 const socket = io();
 const boardEl = document.getElementById("board");
 const overlay = document.getElementById("overlay");
@@ -9,292 +9,130 @@ const drawSound = document.getElementById("drawSound");
 let board = Array(9).fill(null);
 let current = "X";
 let gameOver = false;
-let p1 = "", p2 = "";
 let scoreX = 0, scoreO = 0;
-let roomId = "";
-let gameMode = 3;
-let mode = "Single"; // single or multi
+let gameMode = 3; // First to 3 wins (optional)
 const cpuName = "CPU";
 
-/* ======= On DOM load ======= */
+/* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
-  // mode-selection (single/multi)
-  document.querySelectorAll('input[name="mode"]').forEach(radio => {
-    radio.addEventListener("change", () => {
-      mode = radio.value;
-      document.getElementById("p2").hidden = (mode === "single");
-    });
-  });
-
   document.getElementById("startBtn").onclick = startGame;
-  document.getElementById("resetBtn").onclick = () => socket.emit("restart-round", { roomId });
+  document.getElementById("resetBtn").onclick = () => socket.emit("restart-round");
   window.addEventListener("keydown", e => {
-  if (e.key && e.key.toLowerCase() === "r") socket.emit("restart-round", { roomId });
+    if (e.key?.toLowerCase() === "r") socket.emit("restart-round");
   });
-
-  socket.on("player-ready", () => {
-    document.getElementById("wait-msg").hidden = false;
-  });
-
-  socket.on("join-success", () => {
-    socket.emit("player-ready", {
-      roomId,
-      name: document.getElementById("p2").value.trim()
-    });
-  });
-
- socket.on("both-ready", ({ p2name }) => {
-  console.log("Both players ready. P2:", p2name); // ✅ DEBUG
-  p2 = p2name;
-  mySymbol = current === "X" ? "X" : "O";
-  finalizeStart();
-});
 
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
 });
 
-/* ===== Start game logic ===== */
+/* ====== Start Game ====== */
 function startGame() {
-  p1 = document.getElementById("p1").value.trim();
-  p2 = document.getElementById("p2").value.trim();
-  const selectedWinVal = document.querySelector('input[name="modeWin"]:checked');
-
-  // Make sure player 1 entered a name and a win condition is selected
-  if (!p1 || !selectedWinVal) {
-    alert("Please enter your name and choose a winning condition.");
-    return;
-  }
-
-  gameMode = parseInt(selectedWinVal.value, 10); // Set 3 or 5
-
-  if (mode === "single") {
-  p2 = cpuName;
-  roomId = "local";
-  socket.emit("join-room", roomId);
-  finalizeStart();
-// start game immediately
-  } else {
-    // multiplayer path
-    if (!p2) {
-      alert("Please enter name for Player 2.");
-      return;
-    }
-
-    if (!roomId) {
-      roomId = prompt("Enter a room name (for multiplayer):");
-      if (!roomId) return alert("A room name is required for multiplayer.");
-      socket.emit('join-room', { roomId, name: p1 });
-      document.getElementById("wait-msg").hidden = false;
-    }
-  }
-}
-
-/* ===== Initialize UI ===== */
-function finalizeStart() {
-  document.getElementById("mode-entry").style.display = "none";
-  document.getElementById("name-entry").hidden = true;
   document.getElementById("game").hidden = false;
-
   buildBoard();
-  updateInfo();
-
-  setTimeout(() => {
-    overlay.width = boardEl.offsetWidth;
-    overlay.height = boardEl.offsetHeight + 100;
-    overlay.style.display = 'none';
-  }, 0);
 }
 
-/* ===== Build board ===== */
+/* ====== Build Board ====== */
 function buildBoard() {
-  board = Array(9).fill(null);
+  board.fill(null);
   current = "X";
   gameOver = false;
   boardEl.innerHTML = "";
+
   for (let i = 0; i < 9; i++) {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.dataset.i = i.toString();
-    cell.addEventListener("click", cellClick);
+    cell.dataset.i = i;
+    cell.addEventListener("click", () => {
+      if (gameOver || board[i]) return;
+      socket.emit("make-move", { index: i, player: "X" });
+      // CPU move
+      setTimeout(() => {
+        if (!gameOver) {
+          const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
+          if (open.length) {
+            const cpuIdx = open[Math.floor(Math.random() * open.length)];
+            socket.emit("make-move", { index: cpuIdx, player: "O" });
+          }
+        }
+      }, 500);
+    });
     boardEl.appendChild(cell);
   }
 }
 
-/* ===== Handle cell click ===== */
-function cellClick(e) {
-  const i = +e.target.dataset.i;
-  if (gameOver || board[i]) return;
-
-  // Handle single player mode (human vs CPU)
-  if (mode === "single" && current === "X") {
-    socket.emit("make-move", {
-  index: i,
-  player: "X",
-  roomId: roomId || "local"
-});
-
-    // Let CPU go after a short delay
-    setTimeout(() => {
-      if (gameOver) return;
-      const emptyIndices = board.map((val, idx) => val === null ? idx : null).filter(v => v !== null);
-      if (emptyIndices.length === 0) return;
-
-      // Simple AI: choose random empty cell
-      const cpuChoice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-      socket.emit("make-move", { index: cpuChoice, player: "O", roomId });
-    }, 500);
-  }
-
-  // Handle multiplayer mode
-  else if (mode === "multi") {
-  if (current !== mySymbol) return; // not your turn
-  socket.emit("make-move", {
-  index: i,
-  player: current,
-  roomId: roomId || "local"
-});
-  }
-}
-
-
-/* ===== Apply and render moves ===== */
+/* ====== Apply Moves ====== */
 function applyMove({ index, player }) {
-console.log('applyMove called for', player, 'at', index);
-  if (mode === "multi" && board[index]) return;
+  if (gameOver || board[index]) return;
   board[index] = player;
+
   const cell = boardEl.querySelector(`[data-i="${index}"]`);
-  console.log('cell element:', cell);  // 🚩 Should not be null
-if (!cell) {
-  console.warn("Cell not found for index:", index);
-  return;
-}
-
-cell.textContent = player;
-cell.style.fontSize = "clamp(2rem, 8vw, 5rem)";
-cell.style.fontWeight = "bold";
-cell.style.color = player === "X" ? "#e53935" : "#1e88e5";
-console.log("✅ Text content set to:", cell.textContent);
-console.log("🟦 Cell styles:", cell.style.cssText);
-
+  cell.textContent = player;
+  cell.classList.add("filled");
+  cell.dataset.player = player;
 
   const winCombo = checkWin(player);
   if (winCombo) {
     gameOver = true;
-    if (player === "X") {
-  scoreX++;
-} else {
-  scoreO++;
-}
-    try { winSound.play(); } catch {}
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    player === "X" ? scoreX++ : scoreO++;
+    try { winSound.play() } catch {}
     drawWinLine(winCombo);
-    animateWin(`🏆 ${player==="X"?p1:p2} wins this round! 🏆`);
-    if (scoreX >= gameMode || scoreO >= gameMode) {
-      setTimeout(() => {
-        alert(`${player === "X" ? p1 : p2} won the game!`);
-        window.location.reload();
-      }, 3500);
-    } else {
-      setTimeout(resetRound, 5000);
-    }
+    animateWin(`🏆 ${player === "X" ? "You" : cpuName} wins! 🏆`);
     return;
   }
 
   if (board.every(Boolean)) {
     gameOver = true;
-    try { drawSound.play(); } catch {}
+    try { drawSound.play() } catch {}
     animateWin("It's a draw!");
-    return setTimeout(resetRound, 5000);
+    return;
   }
 
   current = current === "X" ? "O" : "X";
-  updateInfo();
-
-  if (mode === "single" && current === "O") {
-    setTimeout(cpuMove, 3000);
-  }
 }
 
-/* ===== CPU move ===== */
-function cpuMove() {
-  if (gameOver || current !== "O") return;
-  const open = board.map((v, i) => v === null ? i : null).filter(i => i !== null);
-  if (!open.length) return;
-
-  // try win or block
-  let idx = findWinningMove("O") ?? findWinningMove("X") ?? open[Math.floor(Math.random() * open.length)];
-  socket.emit("make-move", { index: idx, player: "O", roomId });
-}
-
-/* ===== Smart CPU helper ===== */
-function findWinningMove(p) {
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for (let combo of wins) {
-    const [a, b, c] = combo;
-    const vals = [board[a], board[b], board[c]];
-    if (vals.filter(v => v === p).length === 2 && vals.includes(null)) {
-      return combo[vals.indexOf(null)];
-    }
-  }
-  return null;
-}
-
-/* ===== Utility helpers ===== */
-function updateInfo() {
-  document.getElementById("names").textContent = `${p1} (X) vs ${p2} (O)`;
-  document.getElementById("turn").textContent = gameOver
-    ? "Game Over"
-    : `${current === "X" ? p1 : p2}'s turn (${current})`;
-  document.getElementById("scores").textContent =
-    `${p1}: ${scoreX} | ${p2}: ${scoreO} | First to ${gameMode}`;
+/* ====== Game Helpers ====== */
+function resetRound() {
+  buildBoard();
 }
 
 function checkWin(p) {
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  return wins.find(c => c.every(i => board[i] === p));
+  const combos = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  return combos.find(c => c.every(i => board[i] === p));
 }
 
 function drawWinLine(combo) {
   const rects = combo.map(i => boardEl.children[i].getBoundingClientRect());
-  const boardRect = boardEl.getBoundingClientRect();
-  const [aRect,,,bRect] = rects; // take first and last
+  const bRect = boardEl.getBoundingClientRect();
+  const [startRect, , endRect] = combo.map(i => boardEl.children[i].getBoundingClientRect());
   const getCenter = r => ({
-    x: (r.left + r.right) / 2 - boardRect.left,
-    y: (r.top + r.bottom) / 2 - boardRect.top
+    x: (r.left + r.right)/2 - bRect.left,
+    y: (r.top + r.bottom)/2 - bRect.top
   });
-  const start = getCenter(aRect), end = getCenter(rects[2]);
 
+  const startPt = getCenter(startRect), endPt = getCenter(endRect);
   let t = 0, steps = 20;
-  function stepFrame() {
-    const pct = t++ / steps;
-    ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+  (function animate(){
+    const pct = t/steps;
+    ctx.clearRect(0,0,overlay.width,overlay.height);
     ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(start.x + (end.x - start.x) * pct, start.y + (end.y - start.y) * pct);
-    ctx.strokeStyle = "#000"; ctx.lineWidth = 6; ctx.stroke();
-    if (t <= steps) requestAnimationFrame(stepFrame);
-  }
-  stepFrame();
+    ctx.moveTo(startPt.x, startPt.y);
+    ctx.lineTo(startPt.x + (endPt.x - startPt.x) * pct, startPt.y + (endPt.y - startPt.y) * pct);
+    ctx.strokeStyle="#000"; ctx.lineWidth=6; ctx.stroke();
+    if (t++ <= steps) requestAnimationFrame(animate);
+  })();
 }
 
 function animateWin(msg) {
   const el = document.getElementById("winMessage");
   el.textContent = msg;
-  el.classList.remove("fade-text");
-  void el.offsetWidth;
   el.classList.add("fade-text");
   setTimeout(() => {
     el.classList.remove("fade-text");
     el.textContent = "";
-    updateInfo();
   }, 3000);
-}
-
-function resetRound() {
-  board.fill(null);
-  current = "X";
-  gameOver = false;
-  buildBoard();
-  updateInfo();
 }
