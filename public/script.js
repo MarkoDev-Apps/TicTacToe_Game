@@ -173,7 +173,10 @@ if (!cell) {
 cell.textContent = player;
 cell.style.fontSize = "clamp(2rem, 8vw, 5rem)";
 cell.style.fontWeight = "bold";
-cell.style.color = player === "X" ? "#e53935" : "#1e88e5"; // red for X, blue for O
+cell.style.color = player === "X" ? "#e53935" : "#1e88e5";
+console.log("✅ Text content set to:", cell.textContent);
+console.log("🟦 Cell styles:", cell.style.cssText);
+
 
   const winCombo = checkWin(player);
   if (winCombo) {

@@ -44,18 +44,18 @@ body {
 }
 
 .cell {
-  font-size: clamp(2rem, 8vw, 5rem) !important; /* Responsive, bold text */
-  font-weight: bold !important;
-  color: #e53935 !important; /* Red color for both X and O */
-  background-color: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  aspect-ratio: 1 / 1;
-  border: 2px solid black;
+  font-size: clamp(2rem, 8vw, 5rem); /* Keep this */
+  font-weight: bold;
+  color: black; /* Default color (gets overridden) */
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
+  text-align: center;
 }
+
 
 .cell:active {
   transform: scale(0.95);
