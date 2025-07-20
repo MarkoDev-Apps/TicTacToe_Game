@@ -15,22 +15,23 @@ const io = new Server(server, {
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+const rooms = {}; // Track board + turn + game state per room
+
 // Socket.IO logic
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
-
-  // === SINGLE-PLAYER SUPPORT ===
-  socket.on("make-move", ({ index, player }) => {
-    socket.emit("make-move", { index, player });
+  // ~~~ SINGLE-PLAYER SUPPORT ~~~
+  socket.on('make-move', ({ index, player }) => {
+    socket.emit('make-move', { index, player });
   });
 
-  socket.on("restart-round", () => {
-    socket.emit("restart-round");
+  socket.on('restart-round', () => {
+    socket.emit('restart-round');
   });
-
-  // === MULTIPLAYER SUPPORT ===
+  // ~~~ MULTIPLAYER SUPPORT ~~~
   socket.on('join-room', (roomId) => {
     const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
+
     if (clients.size === 0) {
       socket.join(roomId);
       socket.emit('room-joined', { roomId, host: true });
@@ -44,7 +45,16 @@ io.on('connection', (socket) => {
   });
 
   socket.on('move-room', ({ roomId, index, player }) => {
+    // Broadcast the move to everyone in the same room
     io.to(roomId).emit('make-move', { index, player });
+  });
+
+  socket.on('restart-room', ({ roomId }) => {
+    io.to(roomId).emit('restart-round');
+  });
+
+  socket.on('game-over-room', ({ roomId, result }) => {
+    io.to(roomId).emit('game-over', { result });
   });
 });
 

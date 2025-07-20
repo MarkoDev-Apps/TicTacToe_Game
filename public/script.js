@@ -19,15 +19,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.emit("join-room", room);
 
-  socket.on("room-joined", ({ host }) => {
+  let isHost = false;
+
+  socket.on("room-joined", ({ roomId, host }) => {
     console.log("Joined room:", room);
-    startGame(true); // multiplayer = true
-    document.getElementById("game").dataset.room = room;
-    document.getElementById("game").dataset.host = host;
+    isHost = host;
+    document.getElementById("game").dataset.room = roomId;
+    alert(host
+    ? `Created room ${roomId}. Share it to start.`
+    : `Joined room ${roomId}. Game will start now.`
+  );
   });
 
   socket.on("start-multiplayer", () => {
     console.log("Multiplayer started!");
+    // Hide the landing UI & set up the game board
+  document.getElementById("subtitle").style.display = "none";
+  document.getElementById("name-entry").hidden = true;
+  document.getElementById("multiBtn").style.display = "none";
+  document.getElementById("startBtn").style.display = "none";
+  document.getElementById("game").hidden = false;
+  document.getElementById("resetBtn").style.display = "inline-block";
+
+  buildBoard();       // Build the grid
+  updateInfo();       // Update display (turn, scores)
   });
 
   socket.on("room-full", () => {
@@ -35,7 +50,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 };
 
-  document.getElementById("resetBtn").onclick = () => resetGame(true);
+  //document.getElementById("resetBtn").onclick = () => resetGame(true);
+  document.getElementById("resetBtn").onclick = () => {
+  const room = document.getElementById("game").dataset.room;
+  if (room) {
+    socket.emit("restart-round", room); // multiplayer restart
+  } else {
+    resetGame(true); // single-player reset
+  }
+};
+
 
   // Restart game with R key
   window.addEventListener("keydown", e => {
@@ -55,6 +79,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
+
+  socket.on("game-over", ({ result }) => {
+  gameOver = true;
+  const winnerName =
+    result === "draw"
+      ? "It's a draw!"
+      : result === "X"
+      ? document.getElementById("p1").value
+      : cpuName;
+
+  animateWin(winnerName);
 });
 
 
@@ -98,10 +133,12 @@ function buildBoard() {
     if (gameOver || board[i]) return;
 
     const room = document.getElementById("game").dataset.room;
+    const playerChar = isHost ? "X" : "O";
+    if (playerChar !== current) return;  // enforce turn order
 
     if (room) {
       // ✅ Multiplayer mode
-      socket.emit("move-room", { roomId: room, index: i, player: current });
+      socket.emit("move-room", { roomId: room, index: i, player: playerChar });
     } else {
       // ✅ Single-player mode
       socket.emit("make-move", { index: i, player: "X" });
@@ -136,6 +173,12 @@ function applyMove({ index, player }) {
 
   if (winCombo) {
     gameOver = true;
+    const result = player; // "X" or "O"
+    const room = document.getElementById("game").dataset.room;
+    if (room) {
+  socket.emit("game-over", { roomId: room, result });
+}
+
     if (player === "X") scoreX++;
     else scoreO++;
 
@@ -158,13 +201,12 @@ function applyMove({ index, player }) {
   }
 
   if (board.every(Boolean)) {
-    gameOver = true;
-    try { drawSound.play(); } catch {}
-    animateWin("It's a draw!");
+  gameOver = true;
 
-    setTimeout(() => socket.emit("restart-round"), 3000);
-    return;
+  if (room) {
+    socket.emit("game-over", { roomId: room, result: "draw" });
   }
+}
 
   current = current === "X" ? "O" : "X";
   updateInfo();
