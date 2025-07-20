@@ -19,13 +19,32 @@ app.use(express.static(path.join(__dirname, 'public')));
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
+  // === SINGLE-PLAYER SUPPORT ===
   socket.on("make-move", ({ index, player }) => {
-    // Just emit to the current socket (self-contained gameplay)
     socket.emit("make-move", { index, player });
   });
 
   socket.on("restart-round", () => {
     socket.emit("restart-round");
+  });
+
+  // === MULTIPLAYER SUPPORT ===
+  socket.on('join-room', (roomId) => {
+    const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
+    if (clients.size === 0) {
+      socket.join(roomId);
+      socket.emit('room-joined', { roomId, host: true });
+    } else if (clients.size === 1) {
+      socket.join(roomId);
+      socket.emit('room-joined', { roomId, host: false });
+      io.to(roomId).emit('start-multiplayer', { roomId });
+    } else {
+      socket.emit('room-full');
+    }
+  });
+
+  socket.on('move-room', ({ roomId, index, player }) => {
+    io.to(roomId).emit('make-move', { index, player });
   });
 });
 

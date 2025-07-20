@@ -13,6 +13,28 @@ const cpuName = "CPU";
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
+  document.getElementById("multiBtn").onclick = () => {
+  const room = prompt("Please enter the room number:");
+  if (!room) return alert("Room number is required.");
+
+  socket.emit("join-room", room);
+
+  socket.on("room-joined", ({ host }) => {
+    console.log("Joined room:", room);
+    startGame(true); // multiplayer = true
+    document.getElementById("game").dataset.room = room;
+    document.getElementById("game").dataset.host = host;
+  });
+
+  socket.on("start-multiplayer", () => {
+    console.log("Multiplayer started!");
+  });
+
+  socket.on("room-full", () => {
+    alert("This room is already full.");
+  });
+};
+
   document.getElementById("resetBtn").onclick = () => resetGame(true);
 
   // Restart game with R key
@@ -68,24 +90,35 @@ function buildBoard() {
   boardEl.innerHTML = "";
 
   for (let i = 0; i < 9; i++) {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.dataset.i = i;
-    cell.addEventListener("click", () => {
-      if (gameOver || board[i]) return;
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  cell.dataset.i = i;
+
+  cell.addEventListener("click", () => {
+    if (gameOver || board[i]) return;
+
+    const room = document.getElementById("game").dataset.room;
+
+    if (room) {
+      // ✅ Multiplayer mode
+      socket.emit("move-room", { roomId: room, index: i, player: current });
+    } else {
+      // ✅ Single-player mode
       socket.emit("make-move", { index: i, player: "X" });
 
       setTimeout(() => {
         if (!gameOver) {
           const cpuIdx = getBestMove();
-            if (cpuIdx !== null) {
+          if (cpuIdx !== null) {
             socket.emit("make-move", { index: cpuIdx, player: "O" });
-            }
+          }
         }
       }, 400);
-    });
-    boardEl.appendChild(cell);
-  }
+    }
+  });
+
+  boardEl.appendChild(cell);
+    }
 }
 
 /* ====== Apply Moves ====== */

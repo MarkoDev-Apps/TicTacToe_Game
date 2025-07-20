@@ -64,6 +64,22 @@ body {
   outline: none;
 }
 
+.toggle-btn {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  user-select: none;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: #e0e0e0;
+}
+
 .round-toggle {
   display: flex;
   gap: 10px;
