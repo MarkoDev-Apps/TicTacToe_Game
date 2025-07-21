@@ -14,9 +14,13 @@ body {
   font-size: 2.2rem;
   font-weight: bold;
   margin-top: 30px;
+  text-align: center; /* Center text */
   opacity: 0;
   transform: translateX(-100%);
   animation: slideInCenter 1.2s ease-out forwards;
+  line-height: 1.3;
+  padding: 0 10px;
+  word-break: break-word;
 }
 
 #subtitle {
@@ -58,6 +62,22 @@ body {
 #name-entry input[type="text"]:focus {
   border-color: #007bff;
   outline: none;
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  user-select: none;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: #e0e0e0;
 }
 
 .round-toggle {
@@ -163,7 +183,8 @@ button:hover {
 }
 
 /* Responsive tweak */
-@media (max-height: 700px) {
+/* Responsive tweaks for small screens */
+@media (max-width: 600px), (max-height: 700px) {
   #board {
     grid-template-columns: repeat(3, 75px);
     grid-template-rows: repeat(3, 75px);
@@ -178,10 +199,24 @@ button:hover {
   button {
     padding: 10px 20px;
   }
+
+  #welcome-text {
+    font-size: 1.8rem;
+    margin-top: 20px;
+  }
+
+  #subtitle {
+    font-size: 1.1rem;
+    margin: 8px 0 20px;
+  }
 }
 
 #startBtn {
   margin-top: 10px;
+}
+
+#resetBtn {
+  display: none;
 }
 
 .round-toggle {

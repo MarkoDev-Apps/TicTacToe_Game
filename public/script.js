@@ -17,38 +17,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Restart game with R key
   window.addEventListener("keydown", e => {
-    const gameVisible = !document.getElementById("game").hidden;
-    if (gameVisible && e.key?.toLowerCase() === "r") {
-      resetGame(true);
-    }
-  });
+  const gameVisible = !document.getElementById("game").hidden;
+  if (gameVisible && e.key?.toLowerCase() === "r") {
+    resetGame(true);
+  }
+});
 
   // Prevent Enter in name input from refreshing the page
   document.getElementById("p1").addEventListener("keydown", e => {
     if (e.key === "Enter") e.preventDefault();
   });
 
-  //  Add floating background X and O
+  // 🌟 Add floating background X and O
   spawnFloatingSymbols();
 
-  // === SOCKET.IO LISTENERS ===
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
-  socket.on("game-over", ({ result }) => {
-    gameOver = true;
-    const winnerName =
-      result === "draw"
-        ? "It's a draw!"
-        : result === "X"
-        ? document.getElementById("p1").value || "Player"
-        : cpuName;
-    animateWin(winnerName);
-  });
-
-  socket.on("room-full", () => {
-    alert("This room is already full.");
-  });
 });
+
 
 /* ====== Start Game ====== */
 function startGame() {
