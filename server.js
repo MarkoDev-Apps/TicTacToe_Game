@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
 
   socket.on('move-room', ({ roomId, index, player }) => {
     // Broadcast the move to everyone in the same room
-    io.to(roomId).emit('make-move', { index, player });
+    socket.to(roomId).emit("make-move", { index, player });
   });
 
   socket.on('restart-room', ({ roomId }) => {

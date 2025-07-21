@@ -134,9 +134,16 @@ function buildBoard() {
     const cell = document.createElement("div");
     cell.className = "cell";
     cell.dataset.i = i;
-    cell.addEventListener("click", () => {
-      if (gameOver || board[i]) return;
-      socket.emit("make-move", { index: i, player: "X" });
+    const roomId = document.getElementById("game").dataset.room;
+    if (isMultiplayer && roomId) {
+  socket.emit("move-room", {
+    roomId,
+    index: i,
+    player: current,
+  });
+} else {
+  socket.emit("make-move", { index: i, player: current });
+}
 
       setTimeout(() => {
   if (!gameOver && !isMultiplayer) {
