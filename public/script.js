@@ -62,10 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 });
 
-socket.on("start-multiplayer", () => {
+  socket.on("start-multiplayer", ({ X, O }) => {
   isMultiplayer = true;
   playerXName = X;
   playerOName = O;
+  // Automatically assign local player name
+  const localName = document.getElementById("p1").value.trim();
+  playerName = localName;
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("multiBtn").style.display = "none";
