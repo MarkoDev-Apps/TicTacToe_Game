@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Enter") e.preventDefault();
   });
 
-  // 🌟 Add floating background X and O
+  //  Add floating background X and O
   spawnFloatingSymbols();
 
   // === SOCKET.IO LISTENERS ===
