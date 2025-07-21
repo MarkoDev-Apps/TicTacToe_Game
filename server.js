@@ -56,6 +56,10 @@ io.on('connection', (socket) => {
   socket.on('game-over-room', ({ roomId, result }) => {
     io.to(roomId).emit('game-over', { result });
   });
+
+  socket.on("set-name", ({ name, roomId }) => {
+  socket.to(roomId).emit("player-name", name);
+});
 });
 
 const PORT = process.env.PORT || 3000;

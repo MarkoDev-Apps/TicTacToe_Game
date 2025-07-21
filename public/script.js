@@ -10,6 +10,9 @@ let scoreX = 0, scoreO = 0;
 let gameMode = 3;
 const cpuName = "CPU";
 let isHost = false;
+let isMultiplayer = false;
+let playerName = "";
+let opponentName = "Player 2";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,29 +47,45 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("restart-round", resetRound);
 
   socket.on("room-joined", ({ roomId, host }) => {
-    isHost = host;
-    document.getElementById("game").dataset.room = roomId;
-    alert(host
+  isHost = host;
+  document.getElementById("game").dataset.room = roomId;
+  const p1 = document.getElementById("p1");
+  if (!isHost && p1.value.trim()) {
+    playerName = document.getElementById("p1").value.trim();
+    opponentName = p1.value.trim();
+    socket.emit("set-name", { name: opponentName, roomId });
+  }
+  alert(
+    host
       ? `Created room ${roomId}. Share this room name with your opponent.`
-      : `Joined room ${roomId}. The game will begin!`
-    );
-  });
+      : `Joined room ${roomId}. The game will now begin!`
+  );
+});
 
-  socket.on("start-multiplayer", () => {
-    document.getElementById("subtitle").style.display = "none";
-    document.getElementById("name-entry").hidden = true;
-    document.getElementById("multiBtn").style.display = "none";
-    document.getElementById("startBtn").style.display = "none";
-    document.getElementById("game").hidden = false;
-    document.getElementById("resetBtn").style.display = "inline-block";
+socket.on("start-multiplayer", () => {
+  isMultiplayer = true;
+  document.getElementById("subtitle").style.display = "none";
+  document.getElementById("name-entry").hidden = true;
+  document.getElementById("multiBtn").style.display = "none";
+  document.getElementById("startBtn").style.display = "none";
+  document.getElementById("p1").style.display = "none"; // 👈 HIDE NAME BOX
+  document.querySelector(".round-toggle").style.display = "none"; // 👈 HIDE ROUND TOGGLE
+  document.getElementById("game").hidden = false;
+  document.getElementById("resetBtn").style.display = "inline-block";
 
-    buildBoard();
-    updateInfo();
-  });
+  buildBoard();
+  updateInfo();
+});
 
   socket.on("room-full", () => {
     alert("This room is already full.");
   });
+
+  socket.on("player-name", (name) => {
+  opponentName = name;
+  updateInfo(); // refresh UI when name is received
+});
+
 
   socket.on("game-over", ({ result }) => {
     gameOver = true;
@@ -95,7 +114,7 @@ function startGame() {
   document.getElementById("p1").style.display = "none"; // NEW
   document.querySelector(".round-toggle").style.display = "none";
   document.getElementById("startBtn").style.display = "none";
-
+  document.getElementById("multiBtn").style.display = "none";
   document.getElementById("game").hidden = false;
 
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
@@ -120,14 +139,14 @@ function buildBoard() {
       socket.emit("make-move", { index: i, player: "X" });
 
       setTimeout(() => {
-        if (!gameOver) {
-          const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
-          if (open.length) {
-            const cpuIdx = open[Math.floor(Math.random() * open.length)];
-            socket.emit("make-move", { index: cpuIdx, player: "O" });
-          }
-        }
-      }, 400);
+  if (!gameOver && !isMultiplayer) {
+    const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
+    if (open.length) {
+      const cpuIdx = open[Math.floor(Math.random() * open.length)];
+      socket.emit("make-move", { index: cpuIdx, player: "O" });
+    }
+       }
+        }, 400);
     });
     boardEl.appendChild(cell);
   }
@@ -184,9 +203,22 @@ function applyMove({ index, player }) {
 
 function updateInfo() {
   const name = document.getElementById("p1").value || "Player";
-  document.getElementById("names").textContent = `${name} (X) vs CPU (O)`;
-  document.getElementById("turn").textContent = `${name}'s turn (${current})`;
-  document.getElementById("scores").textContent = `${name}: ${scoreX} | CPU: ${scoreO} | First to ${gameMode}`;
+  const isPlayerX = current === "X";
+
+  if (isMultiplayer) {
+    const pX = playerName || name;
+    const pO = opponentName || "Player 2";
+    document.getElementById("names").textContent = `${pX} (X) vs ${pO} (O)`;
+    document.getElementById("turn").textContent = `${
+      isPlayerX ? pX : pO
+    }'s turn (${current})`;
+    document.getElementById("scores").textContent = `${pX}: ${scoreX} | ${pO}: ${scoreO} | First to ${gameMode}`;
+  } else {
+    const opponent = "CPU";
+    document.getElementById("names").textContent = `${name} (X) vs ${opponent} (O)`;
+    document.getElementById("turn").textContent = `${name}'s turn (${current})`;
+    document.getElementById("scores").textContent = `${name}: ${scoreX} | ${opponent}: ${scoreO} | First to ${gameMode}`;
+  }
 }
 
 function resetRound() {
