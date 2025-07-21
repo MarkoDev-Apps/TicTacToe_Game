@@ -51,9 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("game").dataset.room = roomId;
   const p1 = document.getElementById("p1");
   if (!isHost && p1.value.trim()) {
-    playerName = document.getElementById("p1").value.trim();
-    opponentName = p1.value.trim();
-    socket.emit("set-name", { name: opponentName, roomId });
+    //playerName = document.getElementById("p1").value.trim();
+    playerName = p1.value.trim();
+    socket.emit("set-name", { name: playerName, roomId }); // ✅ Emit your own name
   }
   alert(
     host
