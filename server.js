@@ -53,13 +53,33 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('restart-round');
   });
 
+  socket.on("match-won", ({ winnerName }) => {
+  alert(`🎉 ${winnerName} wins the match! Game will reset.`);
+  resetGame(false);
+});
+
   socket.on('game-over-room', ({ roomId, result }) => {
     io.to(roomId).emit('game-over', { result });
   });
 
-  socket.on("set-name", ({ name, roomId }) => {
-  socket.to(roomId).emit("player-name", name);
-});
+socket.on("set-name", ({ name, roomId }) => {
+  if (!rooms[roomId]) {
+    rooms[roomId] = { players: [] };
+  }
+
+  // Store player name
+  rooms[roomId].players.push({ id: socket.id, name });
+
+  // If both players have joined
+  if (rooms[roomId].players.length === 2) {
+    const [playerX, playerO] = rooms[roomId].players;
+
+    io.in(roomId).emit("start-multiplayer", {
+      X: playerX.name,
+      O: playerO.name,
+    });
+  }
+    });
 });
 
 const PORT = process.env.PORT || 3000;

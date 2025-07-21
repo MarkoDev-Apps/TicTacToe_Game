@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 socket.on("start-multiplayer", () => {
   isMultiplayer = true;
+  playerXName = X;
+  playerOName = O;
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("multiBtn").style.display = "none";
@@ -90,10 +92,8 @@ socket.on("game-over", ({ result }) => {
   gameOver = true;
   let winnerName;
   if (result === "draw") winnerName = "It's a draw!";
-  else if (result === "X") winnerName = playerName || document.getElementById("p1").value;
-  else {
-    winnerName = isMultiplayer ? opponentName : cpuName;
-  }
+  else if (result === "X") winnerName = playerXName;
+  else winnerName = isMultiplayer ? playerOName : cpuName;
 
   animateWin(`🏆 ${winnerName} wins! 🏆`);
     });
@@ -241,6 +241,9 @@ function resetGame(manual) {
   scoreO = 0;
   current = "X";
   gameOver = false;
+  playerXName = "";
+  playerOName = "";
+
 
   // Reset board
   boardEl.innerHTML = ""; // ⬅️ Clear board from DOM
