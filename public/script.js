@@ -64,11 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.on("start-multiplayer", ({ X, O }) => {
   isMultiplayer = true;
-  playerXName = X;
-  playerOName = O;
   // Automatically assign local player name
   const localName = document.getElementById("p1").value.trim();
   playerName = localName;
+  if (localName === X) {
+    playerXName = localName;
+    playerOName = O;
+  } else {
+    playerXName = X;
+    playerOName = localName;
+  }
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("multiBtn").style.display = "none";
@@ -187,9 +192,14 @@ function applyMove({ index, player }) {
     if (player === "X") scoreX++;
     else scoreO++;
 
-    try { winSound.play(); } catch {}
-    const winnerName = player === "X" ? p1Name : cpuName;
-    animateWin(`🏆 ${winnerName} wins! 🏆`);
+   try { winSound.play(); } catch {}
+let winnerName;
+if (isMultiplayer) {
+  winnerName = player === "X" ? playerXName : playerOName;
+} else {
+  winnerName = player === "X" ? p1Name : cpuName;
+}
+animateWin(`🏆 ${winnerName} wins! 🏆`);
 
     // Check for match win
     setTimeout(() => {
