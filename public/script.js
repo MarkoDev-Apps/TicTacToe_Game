@@ -49,11 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("room-joined", ({ roomId, host }) => {
   isHost = host;
   document.getElementById("game").dataset.room = roomId;
-  const p1 = document.getElementById("p1");
-  if (!isHost && p1.value.trim()) {
+  const enteredName = document.getElementById("p1").value.trim();
+  if (enteredName) {
     //playerName = document.getElementById("p1").value.trim();
-    playerName = p1.value.trim();
-    socket.emit("set-name", { name: playerName, roomId }); // ✅ Emit your own name
+    playerName = enteredName;
+    socket.emit("set-name", { name: enteredName, roomId }); // ✅ Emit your own name
   }
   alert(
     host
@@ -86,18 +86,17 @@ socket.on("start-multiplayer", () => {
   updateInfo(); // refresh UI when name is received
 });
 
+socket.on("game-over", ({ result }) => {
+  gameOver = true;
+  let winnerName;
+  if (result === "draw") winnerName = "It's a draw!";
+  else if (result === "X") winnerName = playerName || document.getElementById("p1").value;
+  else {
+    winnerName = isMultiplayer ? opponentName : cpuName;
+  }
 
-  socket.on("game-over", ({ result }) => {
-    gameOver = true;
-    const winnerName =
-      result === "draw"
-        ? "It's a draw!"
-        : result === "X"
-        ? document.getElementById("p1").value
-        : cpuName;
-
-    animateWin(winnerName);
-  });
+  animateWin(`🏆 ${winnerName} wins! 🏆`);
+    });
 });
 
 /* ====== Start Game ====== */
@@ -258,6 +257,8 @@ document.getElementById("scores").textContent = "";
   document.getElementById("startBtn").style.display = "inline-block";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
+  document.getElementById("multiBtn").style.display = "inline-block";
+  document.getElementById("resetBtn").style.display = "none";
 
   if (manual) location.reload(); // manual resets force refresh
 }
