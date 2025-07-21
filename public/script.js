@@ -9,19 +9,27 @@ let gameOver = false;
 let scoreX = 0, scoreO = 0;
 let gameMode = 3;
 const cpuName = "CPU";
+let isHost = false;
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
   document.getElementById("resetBtn").onclick = () => resetGame(true);
 
+  // Multiplayer button handler
+  document.getElementById("multiBtn").onclick = () => {
+    const room = prompt("Enter a room name to join or create:");
+    if (!room) return alert("Room name is required.");
+    socket.emit("join-room", room);
+  };
+
   // Restart game with R key
   window.addEventListener("keydown", e => {
-  const gameVisible = !document.getElementById("game").hidden;
-  if (gameVisible && e.key?.toLowerCase() === "r") {
-    resetGame(true);
-  }
-});
+    const gameVisible = !document.getElementById("game").hidden;
+    if (gameVisible && e.key?.toLowerCase() === "r") {
+      resetGame(true);
+    }
+  });
 
   // Prevent Enter in name input from refreshing the page
   document.getElementById("p1").addEventListener("keydown", e => {
@@ -31,10 +39,47 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🌟 Add floating background X and O
   spawnFloatingSymbols();
 
+  // Socket listeners
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
-});
 
+  socket.on("room-joined", ({ roomId, host }) => {
+    isHost = host;
+    document.getElementById("game").dataset.room = roomId;
+    alert(host
+      ? `Created room ${roomId}. Share this room name with your opponent.`
+      : `Joined room ${roomId}. The game will begin!`
+    );
+  });
+
+  socket.on("start-multiplayer", () => {
+    document.getElementById("subtitle").style.display = "none";
+    document.getElementById("name-entry").hidden = true;
+    document.getElementById("multiBtn").style.display = "none";
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("game").hidden = false;
+    document.getElementById("resetBtn").style.display = "inline-block";
+
+    buildBoard();
+    updateInfo();
+  });
+
+  socket.on("room-full", () => {
+    alert("This room is already full.");
+  });
+
+  socket.on("game-over", ({ result }) => {
+    gameOver = true;
+    const winnerName =
+      result === "draw"
+        ? "It's a draw!"
+        : result === "X"
+        ? document.getElementById("p1").value
+        : cpuName;
+
+    animateWin(winnerName);
+  });
+});
 
 /* ====== Start Game ====== */
 function startGame() {
