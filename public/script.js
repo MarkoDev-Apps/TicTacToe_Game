@@ -12,7 +12,7 @@ const cpuName = "CPU";
 let isHost = false;
 let isMultiplayer = false;
 let playerName = "";
-let opponentName = "Player 2";
+let opponentName = "";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -96,6 +96,11 @@ socket.on("game-over", ({ result }) => {
   else winnerName = isMultiplayer ? playerOName : cpuName;
 
   animateWin(`🏆 ${winnerName} wins! 🏆`);
+    });
+
+    socket.on("match-won", ({ winnerName }) => {
+  alert(`🎉 ${winnerName} wins the match! Game will reset.`);
+  location.reload(); // ✅ Triggers full page reload on both clients
     });
 });
 
@@ -187,8 +192,14 @@ function applyMove({ index, player }) {
     setTimeout(() => {
       if (scoreX === gameMode || scoreO === gameMode) {
         const finalWinner = scoreX === gameMode ? p1Name : cpuName;
-        alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
-        resetGame(false);
+        const roomId = document.getElementById("game").dataset.room;
+        if (isMultiplayer && roomId) {
+        socket.emit("match-won", { winnerName: finalWinner, roomId });
+    } else {
+     alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
+     location.reload(); // Reload manually for single player
+    }
+
       } else {
         socket.emit("restart-round");
       }

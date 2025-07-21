@@ -53,10 +53,10 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('restart-round');
   });
 
-  socket.on("match-won", ({ winnerName }) => {
-  alert(`🎉 ${winnerName} wins the match! Game will reset.`);
-  resetGame(false);
-});
+    socket.on("match-won", ({ winnerName, roomId }) => {
+    io.to(roomId).emit("match-won", { winnerName }); // 🔄 Tell both players to reload
+    });
+
 
   socket.on('game-over-room', ({ roomId, result }) => {
     io.to(roomId).emit('game-over', { result });
