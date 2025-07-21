@@ -130,33 +130,35 @@ function buildBoard() {
   gameOver = false;
   boardEl.innerHTML = "";
 
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.dataset.i = i;
+for (let i = 0; i < 9; i++) {
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  cell.dataset.i = i;
+
+  cell.addEventListener("click", () => {
+    if (gameOver || board[i]) return;
+
     const roomId = document.getElementById("game").dataset.room;
     if (isMultiplayer && roomId) {
-  socket.emit("move-room", {
-    roomId,
-    index: i,
-    player: current,
-  });
-} else {
-  socket.emit("make-move", { index: i, player: current });
-}
-
-      setTimeout(() => {
-  if (!gameOver && !isMultiplayer) {
-    const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
-    if (open.length) {
-      const cpuIdx = open[Math.floor(Math.random() * open.length)];
-      socket.emit("make-move", { index: cpuIdx, player: "O" });
+      socket.emit("move-room", { roomId, index: i, player: current });
+    } else {
+      socket.emit("make-move", { index: i, player: current });
     }
-       }
-        }, 400);
-    });
-    boardEl.appendChild(cell);
-  }
+
+    if (!isMultiplayer) {
+      setTimeout(() => {
+        if (!gameOver) {
+          const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
+          if (open.length) {
+            const cpuIdx = open[Math.floor(Math.random() * open.length)];
+            socket.emit("make-move", { index: cpuIdx, player: "O" });
+          }
+        }
+      }, 400);
+    }
+  });
+
+  boardEl.appendChild(cell);
 }
 
 /* ====== Apply Moves ====== */
