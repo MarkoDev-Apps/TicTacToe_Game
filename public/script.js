@@ -159,6 +159,7 @@ for (let i = 0; i < 9; i++) {
   });
 
   boardEl.appendChild(cell);
+    }
 }
 
 /* ====== Apply Moves ====== */
