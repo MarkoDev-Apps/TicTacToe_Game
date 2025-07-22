@@ -12,7 +12,7 @@ const cpuName = "CPU";
 let isHost = false;
 let isMultiplayer = false;
 let playerName = "";
-let opponentName = "Player 2";
+let opponentName = "";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -46,11 +46,16 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("make-move", applyMove);
   socket.on("restart-round", resetRound);
 
+  socket.on("match-won", ({ winnerName }) => {
+  alert(`🎉 ${winnerName} wins the match! Game will reset.`);
+  location.reload();
+});
+
   socket.on("room-joined", ({ roomId, host }) => {
   isHost = host;
   document.getElementById("game").dataset.room = roomId;
   const p1 = document.getElementById("p1");
-  if (!isHost && p1.value.trim()) {
+  if (p1.value.trim()) {
     playerName = document.getElementById("p1").value.trim();
     opponentName = p1.value.trim();
     socket.emit("set-name", { name: opponentName, roomId });
@@ -62,8 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 });
 
-socket.on("start-multiplayer", () => {
+  socket.on("assign-roles", ({ X, O }) => {
   isMultiplayer = true;
+  playerName = X;
+  opponentName = O;
+   // If the user matches the X name, they're X; otherwise they're O
+  const inputName = document.getElementById("p1").value.trim();
+  if (inputName === O) {
+    current = "O";
+  }
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("multiBtn").style.display = "none";
@@ -181,15 +193,25 @@ function applyMove({ index, player }) {
     else scoreO++;
 
     try { winSound.play(); } catch {}
-    const winnerName = player === "X" ? p1Name : cpuName;
+    let winnerName;
+    if (isMultiplayer) {
+    winnerName = player === "X" ? playerName : opponentName;
+    } else {
+    winnerName = player === "X" ? p1Name : cpuName;
+    }
     animateWin(`🏆 ${winnerName} wins! 🏆`);
 
     // Check for match win
     setTimeout(() => {
       if (scoreX === gameMode || scoreO === gameMode) {
         const finalWinner = scoreX === gameMode ? p1Name : cpuName;
-        alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
-        resetGame(false);
+        const roomId = document.getElementById("game").dataset.room;
+    if (isMultiplayer && roomId) {
+  socket.emit("match-won", { winnerName: finalWinner, roomId });
+    } else {
+  alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
+  resetGame(false);
+    }
       } else {
         socket.emit("restart-round");
       }
@@ -242,6 +264,8 @@ function resetGame(manual) {
   scoreO = 0;
   current = "X";
   gameOver = false;
+  playerName = "";
+  opponentName = "";
 
   // Reset board
   boardEl.innerHTML = ""; // ⬅️ Clear board from DOM

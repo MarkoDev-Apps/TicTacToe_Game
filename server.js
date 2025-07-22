@@ -44,6 +44,10 @@ io.on('connection', (socket) => {
     }
   });
 
+    socket.on("match-won", ({ winnerName, roomId }) => {
+    io.to(roomId).emit("match-won", { winnerName });
+    });
+
   socket.on('move-room', ({ roomId, index, player }) => {
     // Broadcast the move to everyone in the same room
      io.to(roomId).emit("make-move", { index, player });
@@ -57,9 +61,33 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('game-over', { result });
   });
 
-  socket.on("set-name", ({ name, roomId }) => {
-  socket.to(roomId).emit("player-name", name);
-});
+  const rooms = {}; // Format: { roomId: { players: [{ id, name }] } }
+    socket.on("set-name", ({ name, roomId }) => {
+     if (!rooms[roomId]) {
+    rooms[roomId] = { players: [] };
+  }
+  // Avoid duplicates
+  if (!rooms[roomId].players.some(p => p.id === socket.id)) {
+    rooms[roomId].players.push({ id: socket.id, name });
+  }
+  // When 2 players are in the room, emit names with assigned roles
+  if (rooms[roomId].players.length === 2) {
+    const [playerX, playerO] = rooms[roomId].players;
+    io.to(roomId).emit("assign-roles", {
+      X: playerX.name,
+      O: playerO.name
+         });
+       }
+    });
+
+    socket.on("disconnect", () => {
+    for (const [roomId, room] of Object.entries(rooms)) {
+    room.players = room.players.filter(p => p.id !== socket.id);
+    if (room.players.length === 0) {
+      delete rooms[roomId]; // Clean up empty rooms
+        }
+      }
+    });
 });
 
 const PORT = process.env.PORT || 3000;
