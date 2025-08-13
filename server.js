@@ -101,33 +101,24 @@ socket.on("chat-message", ({ roomId, from, text }) => {
     });
   }
 });
-     // Avoid duplicates
-     // When 2 players are in the room, emit names with assigned roles
-    // if (rooms[roomId].players.length === 2) {
-    //  const [playerX, playerO] = rooms[roomId].players;
-    //  io.to(roomId).emit("assign-roles", {
-    //    X: playerX.name,
-    //    O: playerO.name
-    //  });
 
- // socket.on("disconnect", () => {
-  //  for (const [roomId, room] of Object.entries(rooms)) {
-  //    room.players = room.players.filter(p => p.id !== socket.id);
-   //   if (room.players.length === 0) {
-    //    delete rooms[roomId]; // Clean up empty rooms
-    //  }
-   // }
- // });
-  socket.on("disconnect", () => {
-    for (const [roomId, room] of Object.entries(rooms)) {
-     room.players = room.players.filter(p => p.id !== socket.id);
+socket.on("disconnecting", () => {
+  for (const roomId of socket.rooms) {
+    if (roomId === socket.id) continue;      // skip the socket’s own room
+    const room = rooms[roomId];
+    if (!room) continue;
+
+    const before = room.players.length;
+    room.players = room.players.filter(p => p.id !== socket.id);
+    if (room.players.length !== before) {
       if (room.players.length === 0) {
-        delete rooms[roomId]; // Clean up empty rooms
+        delete rooms[roomId];
       } else {
-        io.to(roomId).emit("opponent-left"); // optional UX
+        io.to(roomId).emit("opponent-left");
       }
     }
-  });
+  }
+});
  });
 
  const PORT = process.env.PORT || 3000;
