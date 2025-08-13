@@ -17,7 +17,8 @@ let myMark = "X";      // "X" or "O"
 let xName = "";
 let oName = "";
 // Chat refs (available to all functions)
-let chatEl, chatMessages, chatInput, chatSend;
+let chatEl, chatMessages, chatInput, chatSend, chatToggle;
+const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,6 +29,36 @@ chatEl = document.getElementById("chat");
 chatMessages = document.getElementById("chat-messages");
 chatInput = document.getElementById("chat-input");
 chatSend = document.getElementById("chat-send");
+chatToggle = document.getElementById("chat-toggle");
+
+// helper: set collapsed state + persist
+function setChatCollapsed(collapsed) {
+  if (!chatEl) return;
+  chatEl.classList.toggle("collapsed", !!collapsed);
+  if (chatToggle) {
+    chatToggle.setAttribute("aria-expanded", String(!collapsed));
+    chatToggle.textContent = collapsed ? "▸" : "▾"; // icon changes
+  }
+  try { localStorage.setItem(CHAT_COLLAPSED_KEY, collapsed ? "1" : "0"); } catch {}
+}
+
+// restore last state
+const initialCollapsed = (localStorage.getItem(CHAT_COLLAPSED_KEY) === "1");
+setChatCollapsed(initialCollapsed);
+
+// toggle on click
+if (chatToggle) {
+  chatToggle.addEventListener("click", () => {
+    const c = chatEl.classList.contains("collapsed");
+    setChatCollapsed(!c);
+    if (!c) {
+      // collapsing — leave unread state alone
+    } else {
+      // expanding — clear unread highlight
+      chatEl.classList.remove("unread");
+    }
+  });
+}
 // Force hidden at startup (single-player path)
 if (chatEl) chatEl.hidden = true;
 
@@ -144,8 +175,14 @@ chatInput.addEventListener("keydown", (e) => {
   document.getElementById("game").hidden = false;
   document.getElementById("resetBtn").style.display = "inline-block";
 
+  if (chatEl) chatEl.classList.remove("unread");
+
  if (chatEl && chatInput) {
    chatEl.hidden = false;
+   // apply persisted collapsed state when showing chat
+const collapsed = (localStorage.getItem(CHAT_COLLAPSED_KEY) === "1");
+setChatCollapsed(collapsed);
+if (chatInput && !collapsed) chatInput.focus();
    chatInput.placeholder = `Message ${opponentName || "Opponent"}...`;
    chatInput.focus();
  }
@@ -174,6 +211,9 @@ socket.on("chat-message", ({ from, text }) => {
   // If it's mine, we already appended “Me”; avoid duplicates by checking name
   if (from === playerName) return;
   appendChat({ from, text, self: false });
+  if (chatEl && chatEl.classList.contains("collapsed")) {
+  chatEl.classList.add("unread"); // subtle header highlight
+}
 });
 
 
@@ -418,6 +458,7 @@ document.getElementById("scores").textContent = "";
  if (chatEl && chatMessages) {
    chatEl.hidden = true;
    chatMessages.innerHTML = "";
+   chatEl.classList.remove("unread");   // ← add this line here
  }
 
   if (manual) location.reload(); // manual resets force refresh

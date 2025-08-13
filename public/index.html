@@ -64,7 +64,10 @@
 
 <!-- Room Chat (hidden until multiplayer starts) -->
 <div id="chat" hidden>
-  <div id="chat-header">💬 Room Chat</div>
+  <div id="chat-header">
+  <span>💬 Room Chat</span>
+  <button id="chat-toggle" aria-controls="chat" aria-expanded="true" title="Minimize chat">▾</button>
+</div>
   <div id="chat-messages"></div>
   <div id="chat-input-row">
     <input id="chat-input" type="text" maxlength="300" placeholder="Type a message..." />

@@ -261,6 +261,32 @@ button:hover {
 /* Utility: make the HTML `hidden` attribute actually hide elements */
 [hidden] { display: none !important; }
 
+/* Collapsed chat: hide body, keep header visible */
+#chat.collapsed #chat-messages,
+#chat.collapsed #chat-input-row { display: none; }
+
+/* Make the header a flex row with a button on the right */
+#chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Toggle button */
+#chat-toggle {
+  border: none;
+  background: transparent;
+  color: #ddd;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+#chat-toggle:hover { background: rgba(255,255,255,0.08); }
+
+/* Optional: subtle highlight if there are unread messages while collapsed */
+#chat.unread #chat-header { border-bottom-color: #0af; }
+
 /* --- Chat --- */
 #chat {
   position: fixed;
