@@ -11,8 +11,11 @@ let gameMode = 3;
 const cpuName = "CPU";
 let isHost = false;
 let isMultiplayer = false;
-let playerName = "";
-let opponentName = "";
+let playerName = "";   // my name
+let opponentName = ""; // opponent name
+let myMark = "X";      // "X" or "O"
+let xName = "";
+let oName = "";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -21,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Multiplayer button handler
   document.getElementById("multiBtn").onclick = () => {
+  const name = document.getElementById("p1").value.trim();
+  if (!name) { alert("Enter your name first."); return; }
     const room = prompt("Enter a room name to join or create:");
     if (!room) return alert("Room name is required.");
     socket.emit("join-room", room);
@@ -56,9 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("game").dataset.room = roomId;
   const p1 = document.getElementById("p1");
   if (p1.value.trim()) {
-    playerName = document.getElementById("p1").value.trim();
-    opponentName = p1.value.trim();
-    socket.emit("set-name", { name: opponentName, roomId });
+//    playerName = document.getElementById("p1").value.trim();
+//    opponentName = p1.value.trim();
+//    socket.emit("set-name", { name: opponentName, roomId });
+    playerName = p1.value.trim();
+    socket.emit("set-name", { name: playerName, roomId });
   }
   alert(
     host
@@ -67,14 +74,30 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 });
 
-  socket.on("assign-roles", ({ X, O }) => {
-  isMultiplayer = true;
-  playerName = X;
-  opponentName = O;
+  //socket.on("assign-roles", ({ X, O }) => {
+  //isMultiplayer = true;
+  //playerName = X;
+  //opponentName = O;
    // If the user matches the X name, they're X; otherwise they're O
-  const inputName = document.getElementById("p1").value.trim();
-  if (inputName === O) {
-    current = "O";
+  //const inputName = document.getElementById("p1").value.trim();
+  //if (inputName === O) {
+    //current = "O";
+  //}
+  socket.on("assign-roles", ({ X, O }) => {
+  // X/O are { id, name }
+  isMultiplayer = true;
+  xName = X.name;
+  oName = O.name;
+  if (socket.id === X.id) {
+    myMark = "X";
+    playerName = X.name;
+    opponentName = O.name;
+    //current = "X";
+  } else {
+    myMark = "O";
+    playerName = O.name;
+    opponentName = X.name;
+    //current = "O";
   }
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
@@ -93,10 +116,16 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("This room is already full.");
   });
 
-  socket.on("player-name", (name) => {
-  opponentName = name;
-  updateInfo(); // refresh UI when name is received
+   // Optional: UX when the other player leaves mid-game
+socket.on("opponent-left", () => {
+  alert("Opponent left the room. Returning to home.");
+  location.reload();
 });
+
+//  socket.on("player-name", (name) => {
+//  opponentName = name;
+//  updateInfo(); // refresh UI when name is received
+//});
 
 
   socket.on("game-over", ({ result }) => {
@@ -152,7 +181,10 @@ for (let i = 0; i < 9; i++) {
 
     const roomId = document.getElementById("game").dataset.room;
     if (isMultiplayer && roomId) {
-      socket.emit("move-room", { roomId, index: i, player: current });
+     // socket.emit("move-room", { roomId, index: i, player: current });
+     // Only play on your turn
+    if (current !== myMark) return;
+     socket.emit("move-room", { roomId, index: i, player: myMark });
     } else {
       socket.emit("make-move", { index: i, player: current });
     }
@@ -193,27 +225,51 @@ function applyMove({ index, player }) {
     else scoreO++;
 
     try { winSound.play(); } catch {}
-    let winnerName;
-    if (isMultiplayer) {
-    winnerName = player === "X" ? playerName : opponentName;
-    } else {
-    winnerName = player === "X" ? p1Name : cpuName;
-    }
+  //  let winnerName;
+  //  if (isMultiplayer) {
+  //  winnerName = player === "X" ? playerName : opponentName;
+   // } else {
+   // winnerName = player === "X" ? p1Name : cpuName;
+   // }
+      let winnerName = isMultiplayer
+     ? (player === "X" ? xName : oName)
+    : (player === "X" ? p1Name : cpuName);
     animateWin(`🏆 ${winnerName} wins! 🏆`);
 
     // Check for match win
     setTimeout(() => {
       if (scoreX === gameMode || scoreO === gameMode) {
-        const finalWinner = scoreX === gameMode ? p1Name : cpuName;
-        const roomId = document.getElementById("game").dataset.room;
-    if (isMultiplayer && roomId) {
-  socket.emit("match-won", { winnerName: finalWinner, roomId });
-    } else {
-  alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
-  resetGame(false);
-    }
+     //   const finalWinner = scoreX === gameMode ? p1Name : cpuName;
+     //   const roomId = document.getElementById("game").dataset.room;
+   // if (isMultiplayer && roomId) {
+ // socket.emit("match-won", { winnerName: finalWinner, roomId });
+   // } else {
+  //alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
+ // resetGame(false);
+   // }
+         const roomId = document.getElementById("game").dataset.room;
+       const winnerMark = scoreX === gameMode ? "X" : "O";
+   //   if (isMultiplayer && roomId) {
+   if (isMultiplayer && roomId) {
+   if (isHost) {
+     const finalWinner = winnerMark === "X" ? xName : oName;
+     socket.emit("match-won", { winnerName: finalWinner, roomId });
+   }
+   // non-host: no-op; will receive "match-won" from server
+ } else {
+   const finalWinner = winnerMark === "X" ? p1Name : cpuName;
+   alert(`🎉 ${finalWinner} wins the match! Game will reset.`);
+   resetGame(false);
+ }
       } else {
-        socket.emit("restart-round");
+       // socket.emit("restart-round");
+            const roomId = document.getElementById("game").dataset.room;
+       //if (isMultiplayer && roomId) {
+    if (isMultiplayer && roomId) {
+   if (isHost) socket.emit("restart-room", { roomId });
+ } else {
+   socket.emit("restart-round");
+ }
       }
     }, 3000);
 
@@ -225,7 +281,15 @@ function applyMove({ index, player }) {
     try { drawSound.play(); } catch {}
     animateWin("It's a draw!");
 
-    setTimeout(() => socket.emit("restart-round"), 3000);
+   // setTimeout(() => socket.emit("restart-round"), 3000);
+       setTimeout(() => {
+      const roomId = document.getElementById("game").dataset.room;
+   if (isMultiplayer && roomId) {
+   if (isHost) socket.emit("restart-room", { roomId });
+ } else {
+   socket.emit("restart-round");
+ }
+   }, 3000);
     return;
   }
 
@@ -235,15 +299,19 @@ function applyMove({ index, player }) {
 
 function updateInfo() {
   const name = document.getElementById("p1").value || "Player";
-  const isPlayerX = current === "X";
+ // const isPlayerX = current === "X";
 
   if (isMultiplayer) {
-    const pX = playerName || name;
-    const pO = opponentName || "Player 2";
+  //  const pX = playerName || name;
+ //   const pO = opponentName || "Player 2";
+    const pX = xName || "Player X";
+    const pO = oName || "Player 2";
     document.getElementById("names").textContent = `${pX} (X) vs ${pO} (O)`;
-    document.getElementById("turn").textContent = `${
-      isPlayerX ? pX : pO
-    }'s turn (${current})`;
+  //  document.getElementById("turn").textContent = `${
+   const turnName = current === "X" ? pX : pO;
+   document.getElementById("turn").textContent = `${turnName}'s turn (${current})`;
+     // isPlayerX ? pX : pO
+   // }'s turn (${current})`;
     document.getElementById("scores").textContent = `${pX}: ${scoreX} | ${pO}: ${scoreO} | First to ${gameMode}`;
   } else {
     const opponent = "CPU";
@@ -266,6 +334,9 @@ function resetGame(manual) {
   gameOver = false;
   playerName = "";
   opponentName = "";
+  myMark = "X";
+  xName = "";
+  oName = "";
 
   // Reset board
   boardEl.innerHTML = ""; // ⬅️ Clear board from DOM
