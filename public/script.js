@@ -28,6 +28,8 @@ chatEl = document.getElementById("chat");
 chatMessages = document.getElementById("chat-messages");
 chatInput = document.getElementById("chat-input");
 chatSend = document.getElementById("chat-send");
+// Force hidden at startup (single-player path)
+if (chatEl) chatEl.hidden = true;
 
 function sendChat() {
   const text = chatInput.value.trim();
@@ -59,12 +61,19 @@ chatInput.addEventListener("keydown", (e) => {
   };
 
   // Restart game with R key
-  window.addEventListener("keydown", e => {
-    const gameVisible = !document.getElementById("game").hidden;
-    if (gameVisible && e.key?.toLowerCase() === "r") {
-      resetGame(true);
-    }
-  });
+  window.addEventListener("keydown", (e) => {
+  // If the user is typing in a field, don't trigger hotkeys
+  const t = e.target;
+  const isTyping =
+    t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+  if (isTyping) return;
+
+  const gameVisible = !document.getElementById("game").hidden;
+  if (gameVisible && e.key && e.key.toLowerCase() === "r") {
+    e.preventDefault();
+    resetGame(true);
+  }
+});
 
   // Prevent Enter in name input from refreshing the page
   document.getElementById("p1").addEventListener("keydown", e => {

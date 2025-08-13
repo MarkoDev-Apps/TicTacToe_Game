@@ -258,6 +258,9 @@ button:hover {
   }
 }
 
+/* Utility: make the HTML `hidden` attribute actually hide elements */
+[hidden] { display: none !important; }
+
 /* --- Chat --- */
 #chat {
   position: fixed;
