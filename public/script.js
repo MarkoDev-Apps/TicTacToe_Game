@@ -30,6 +30,7 @@ chatMessages = document.getElementById("chat-messages");
 chatInput = document.getElementById("chat-input");
 chatSend = document.getElementById("chat-send");
 chatToggle = document.getElementById("chat-toggle");
+const chatForm = document.getElementById("chat-input-row");
 
 // helper: set collapsed state + persist
 function setChatCollapsed(collapsed) {
@@ -71,6 +72,14 @@ function sendChat() {
   // Optimistically render as self
   appendChat({ from: "Me", text, self: true });
   chatInput.value = "";
+}
+
+if (chatForm) {
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();      // stop navigation/refresh on desktop & mobile
+    e.stopPropagation();     // don't let it bubble to window hotkeys
+    sendChat();
+  });
 }
 
 chatSend.onclick = sendChat;

@@ -284,8 +284,59 @@ button:hover {
 }
 #chat-toggle:hover { background: rgba(255,255,255,0.08); }
 
-/* Optional: subtle highlight if there are unread messages while collapsed */
-#chat.unread #chat-header { border-bottom-color: #0af; }
+/* Soften/replace the default focus ring on the toggle */
+#chat-toggle:focus {
+  outline: none;           /* remove UA ring */
+  box-shadow: none;        /* some browsers use box-shadow */
+}
+
+/* Accessible custom focus for keyboard users */
+#chat-toggle:focus-visible {
+  outline: 2px solid rgba(0, 170, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Firefox inner focus removal on <button> */
+#chat-toggle::-moz-focus-inner {
+  border: 0;
+}
+
+/* Optional: gentle highlight when anything inside the chat has focus */
+#chat:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+  border-radius: 12px;
+}
+
+/* Full-box glow when unread (typically while collapsed) */
+#chat.unread {
+  animation: chatGlow 1.25s ease-in-out 3; /* 3 pulses then stop */
+}
+
+/* Stronger shadow at mid-pulse */
+@keyframes chatGlow {
+  0% {
+    box-shadow:
+      0 0 0 1px #444,
+      0 0 0 0 rgba(0, 170, 255, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px #444,
+      0 0 24px 6px rgba(0, 170, 255, 0.35);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px #444,
+      0 0 0 0 rgba(0, 170, 255, 0);
+  }
+}
+
+/* Only show messages/input when expanded (you already have this) */
+#chat.collapsed #chat-messages,
+#chat.collapsed #chat-input-row { display: none; }
+
 
 /* --- Chat --- */
 #chat {
