@@ -16,11 +16,38 @@ let opponentName = ""; // opponent name
 let myMark = "X";      // "X" or "O"
 let xName = "";
 let oName = "";
+// Chat refs (available to all functions)
+let chatEl, chatMessages, chatInput, chatSend;
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("startBtn").onclick = startGame;
   document.getElementById("resetBtn").onclick = () => resetGame(true);
+
+chatEl = document.getElementById("chat");
+chatMessages = document.getElementById("chat-messages");
+chatInput = document.getElementById("chat-input");
+chatSend = document.getElementById("chat-send");
+
+function sendChat() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  const roomId = document.getElementById("game").dataset.room;
+ if (!roomId) return; // not in a room yet
+  socket.emit("chat-message", { roomId, from: playerName || "Player", text });
+  // Optimistically render as self
+  appendChat({ from: "Me", text, self: true });
+  chatInput.value = "";
+}
+
+chatSend.onclick = sendChat;
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+});
+
 
   // Multiplayer button handler
   document.getElementById("multiBtn").onclick = () => {
@@ -108,6 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("game").hidden = false;
   document.getElementById("resetBtn").style.display = "inline-block";
 
+ if (chatEl && chatInput) {
+   chatEl.hidden = false;
+   chatInput.placeholder = `Message ${opponentName || "Opponent"}...`;
+   chatInput.focus();
+ }
+
+
   buildBoard();
   updateInfo();
 });
@@ -127,6 +161,12 @@ socket.on("opponent-left", () => {
 //  updateInfo(); // refresh UI when name is received
 //});
 
+socket.on("chat-message", ({ from, text }) => {
+  // If it's mine, we already appended “Me”; avoid duplicates by checking name
+  if (from === playerName) return;
+  appendChat({ from, text, self: false });
+});
+
 
   socket.on("game-over", ({ result }) => {
     gameOver = true;
@@ -140,6 +180,18 @@ socket.on("opponent-left", () => {
     animateWin(winnerName);
   });
 });
+
+function appendChat({ from, text, self = false }) {
+  const row = document.createElement("div");
+  row.className = "message" + (self ? " self" : "");
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  // Prevent XSS: use textContent (not innerHTML)
+  bubble.textContent = `${from}: ${text}`;
+  row.appendChild(bubble);
+  chatMessages.appendChild(row);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 /* ====== Start Game ====== */
 function startGame() {
@@ -353,6 +405,11 @@ document.getElementById("scores").textContent = "";
   document.getElementById("startBtn").style.display = "inline-block";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
+
+ if (chatEl && chatMessages) {
+   chatEl.hidden = true;
+   chatMessages.innerHTML = "";
+ }
 
   if (manual) location.reload(); // manual resets force refresh
 }

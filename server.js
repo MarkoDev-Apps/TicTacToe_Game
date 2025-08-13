@@ -47,6 +47,20 @@ const rooms = {}; // { [roomId]: { players: [{ id, name }] } }
      }
    });
 
+   // Chat: relay messages to everyone in the room
+socket.on("chat-message", ({ roomId, from, text }) => {
+  if (!roomId || !text) return;
+  const room = io.sockets.adapter.rooms.get(roomId);
+  if (!room || !room.has(socket.id)) return; // not in this room
+  // (optional) hard cap length
+  const safe = String(text).slice(0, 300);
+  io.to(roomId).emit("chat-message", {
+    from: String(from || "Player"),
+    text: safe,
+    ts: Date.now(),
+  });
+});
+
    socket.on("match-won", ({ winnerName, roomId }) => {
      io.to(roomId).emit("match-won", { winnerName });
    });
