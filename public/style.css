@@ -14,7 +14,7 @@ body {
   font-size: 2.2rem;
   font-weight: bold;
   margin-top: 30px;
-  text-align: center; /* Center text */
+  text-align: center;
   opacity: 0;
   transform: translateX(-100%);
   animation: slideInCenter 1.2s ease-out forwards;
@@ -181,7 +181,7 @@ button:hover {
   justify-content: center;
   align-items: center;
   gap: 14px;
-  margin: 22px 0 6px;   /* sits just above the copyright line */
+  margin: 22px 0 6px;
   z-index: 1;
 }
 
@@ -338,10 +338,9 @@ body.in-game #socials { display: none; }
 }
 #chat-toggle:hover { background: rgba(255,255,255,0.08); }
 
-/* Soften/replace the default focus ring on the toggle */
 #chat-toggle:focus {
-  outline: none;           /* remove UA ring */
-  box-shadow: none;        /* some browsers use box-shadow */
+  outline: none;
+  box-shadow: none;
 }
 
 /* Accessible custom focus for keyboard users */
@@ -356,19 +355,16 @@ body.in-game #socials { display: none; }
   border: 0;
 }
 
-/* Optional: gentle highlight when anything inside the chat has focus */
 #chat:focus-within {
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
   border-radius: 12px;
 }
 
-/* Full-box glow when unread (typically while collapsed) */
 #chat.unread {
-  animation: chatGlow 1.25s ease-in-out 3; /* 3 pulses then stop */
+  animation: chatGlow 1.25s ease-in-out 3;
 }
 
-/* Stronger shadow at mid-pulse */
 @keyframes chatGlow {
   0% {
     box-shadow:
@@ -387,7 +383,6 @@ body.in-game #socials { display: none; }
   }
 }
 
-/* Only show messages/input when expanded (you already have this) */
 #chat.collapsed #chat-messages,
 #chat.collapsed #chat-input-row { display: none; }
 
@@ -405,7 +400,7 @@ body.in-game #socials { display: none; }
   border: 1px solid #444;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-  z-index: 10; /* above floating background */
+  z-index: 10;
 }
 
 #chat-header {
