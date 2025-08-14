@@ -229,6 +229,9 @@ button:hover {
 
 body.in-game #socials { display: none; }
 
+body.in-game #holo-rules,
+body.in-game #social-row { display: none !important; }
+
 #footer {
   margin-top: auto;
   padding: 20px 0;

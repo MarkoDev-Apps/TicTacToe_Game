@@ -409,6 +409,7 @@ document.getElementById("scores").textContent = "";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
   if (holo) holo.style.display = "";
+  document.body.classList.remove("in-game");
  if (chatEl && chatMessages) {
    chatEl.hidden = true;
    chatMessages.innerHTML = "";
