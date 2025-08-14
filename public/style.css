@@ -418,7 +418,7 @@ button:hover {
 /* ----- Hologram Rules Panel ----- */
 .holo-panel {
   position: relative;
-  margin: 28px auto 0;
+  margin: 42px auto 0;
   width: min(760px, 92vw);
   padding: 16px 14px 14px;
   border-radius: 14px;
@@ -529,6 +529,7 @@ button:hover {
 
 /* mobile tweaks */
 @media (max-width: 600px) {
+.holo-panel { margin-top: calc(36px + env(safe-area-inset-top)); }
   .holo-tabs { gap: 4px; }
   .holo-tab { padding: 5px 8px; font-size: 0.85rem; }
 }
