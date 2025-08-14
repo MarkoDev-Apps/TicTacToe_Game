@@ -16,7 +16,6 @@ let myMark = "X";
 let xName = "";
 let oName = "";
 let chatEl, chatMessages, chatInput, chatSend, chatToggle;
-let holo;
 const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
@@ -167,7 +166,7 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
     playerName = O.name;
     opponentName = X.name;
   }
-  document.body.classList.add("in-game");
+
   if (holo) holo.style.display = "none";
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
@@ -177,6 +176,7 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
   document.querySelector(".round-toggle").style.display = "none";
   document.getElementById("game").hidden = false;
   document.getElementById("resetBtn").style.display = "inline-block";
+
  if (chatEl) chatEl.classList.remove("unread");
  if (chatEl && chatInput) {
  chatEl.hidden = false;
@@ -241,9 +241,6 @@ function startGame() {
     return;
   }
 
-  document.body.classList.add("in-game");
-  if (holo) holo.style.display = "none";
-
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("p1").style.display = "none";
@@ -253,7 +250,6 @@ function startGame() {
   document.getElementById("game").hidden = false;
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
-  //document.body.classList.add("in-game");
   if (holo) holo.style.display = "none";
   buildBoard();
   updateInfo();
