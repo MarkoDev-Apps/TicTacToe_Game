@@ -410,6 +410,71 @@ button:hover {
   #chat { width: 90vw; left: 5vw; bottom: 12px; }
 }
 
+/* Social bar */
+#social-bar {
+  margin: 18px 0 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.social-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #c9f6ff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(100,255,255,0.08);
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+  background: #303a3a;
+  border-color: rgba(100,255,255,0.35);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 0 24px rgba(0,255,255,0.25);
+  color: #e9fbff;
+}
+
+.social-btn svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+/* mobile */
+@media (max-width: 600px) {
+  #social-bar { gap: 10px; }
+  .social-btn { width: 40px; height: 40px; }
+  .social-btn svg { width: 20px; height: 20px; }
+}
+.social-btn.discord:hover {
+  border-color: #5865F2;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45),
+              0 0 24px rgba(88,101,242,0.35);
+}
+
+.social-btn:focus-visible {
+  outline: 2px solid rgba(0,170,255,0.7);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-btn, .social-btn:hover {
+    transform: none;
+    transition: none;
+  }
+}
+.social-btn:active { transform: translateY(0); box-shadow: 0 8px 20px rgba(0,0,0,.4); }
+.social-btn { -webkit-tap-highlight-color: rgba(255,255,255,0); }
+
 /* ----- Hologram Rules Panel ----- */
 .holo-panel {
   position: relative;

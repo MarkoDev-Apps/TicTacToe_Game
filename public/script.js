@@ -27,6 +27,7 @@ let oName = "";
 let chatEl, chatMessages, chatInput, chatSend, chatToggle;
 let holo;
 let cpuThinking = false;
+let socialBar;
 const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
@@ -274,6 +275,7 @@ function startGame() {
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
   if (holo) holo.style.display = "none";
+  if (socialBar) socialBar.hidden = true;
   buildBoard();
   updateInfo();
 }
@@ -441,6 +443,7 @@ document.getElementById("scores").textContent = "";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
   if (holo) holo.style.display = "";
+  if (socialBar) socialBar.hidden = false;
   document.body.classList.remove("in-game");
  if (chatEl && chatMessages) {
    chatEl.hidden = true;
