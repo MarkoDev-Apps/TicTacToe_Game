@@ -91,6 +91,29 @@ chatInput.addEventListener("keydown", (e) => {
 });
 
 
+// Hologram rules tabs
+const holo = document.getElementById("holo-rules");
+document.querySelectorAll(".holo-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    // tabs
+    document.querySelectorAll(".holo-tab").forEach(b => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-selected", "false");
+    });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-selected", "true");
+
+    // panes
+    const pane = btn.dataset.pane;
+    document.querySelectorAll("#holo-rules .pane").forEach(p => {
+      p.classList.remove("is-active");
+      p.hidden = true;
+    });
+    const active = document.getElementById(`pane-${pane}`);
+    if (active) { active.hidden = false; active.classList.add("is-active"); }
+  });
+});
+
   // Multiplayer button handler
   document.getElementById("multiBtn").onclick = () => {
   const name = document.getElementById("p1").value.trim();
@@ -196,6 +219,7 @@ if (chatInput && !collapsed) chatInput.focus();
    chatInput.focus();
  }
 
+if (holo) holo.style.display = "none";
 
   buildBoard();
   updateInfo();
@@ -270,6 +294,7 @@ function startGame() {
 
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
+  if (holo) holo.style.display = "none";
   buildBoard();
   updateInfo();
 }
@@ -463,6 +488,7 @@ document.getElementById("scores").textContent = "";
   document.getElementById("startBtn").style.display = "inline-block";
   document.getElementById("p1").style.display = "inline-block";
   document.getElementById("p1").value = "";
+  if (holo) holo.style.display = "";
 
  if (chatEl && chatMessages) {
    chatEl.hidden = true;

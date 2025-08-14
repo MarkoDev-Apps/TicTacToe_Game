@@ -415,4 +415,128 @@ button:hover {
   #chat { width: 90vw; left: 5vw; bottom: 12px; }
 }
 
+/* ----- Hologram Rules Panel ----- */
+.holo-panel {
+  position: relative;
+  margin: 28px auto 0;
+  width: min(760px, 92vw);
+  padding: 16px 14px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(100, 255, 255, 0.35);
+  background:
+    radial-gradient(120% 180% at 10% 0%, rgba(0,255,255,0.08), transparent 55%),
+    radial-gradient(120% 180% at 100% 100%, rgba(0,200,255,0.08), transparent 55%),
+    #121212;
+  box-shadow:
+    inset 0 0 0 1px rgba(100,255,255,0.12),
+    0 16px 40px rgba(0,0,0,0.45),
+    0 0 70px -30px rgba(0,255,255,0.35);
+  overflow: hidden;
+  color: #e9fbff;
+}
+
+/* scanline sheen */
+.holo-panel::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,255,255,0.08) 0,
+    rgba(0,255,255,0.08) 2px,
+    transparent 3px,
+    transparent 6px
+  );
+  animation: holo-scan 6s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+@keyframes holo-scan {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100%); }
+}
+
+/* soft inner glow */
+.holo-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 48px rgba(0,255,255,0.14);
+  pointer-events: none;
+}
+
+.holo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.holo-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #c9f6ff;
+  text-shadow: 0 0 12px rgba(0,255,255,0.25);
+}
+
+/* tabs */
+.holo-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.holo-tab {
+  background: transparent;
+  border: 1px solid rgba(100,255,255,0.28);
+  color: #c9f6ff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  backdrop-filter: blur(4px);
+  transition: background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+.holo-tab:hover { background: rgba(0,255,255,0.10); }
+.holo-tab.is-active {
+  background: rgba(0,255,255,0.16);
+  border-color: rgba(100,255,255,0.55);
+  box-shadow: inset 0 0 12px rgba(0,255,255,0.28);
+}
+
+.holo-body { font-size: 0.95rem; }
+.holo-body ul { margin: 8px 0 0 18px; }
+.holo-body li { margin: 4px 0; opacity: 0.95; }
+
+/* tab panes */
+.pane { display: none; }
+.pane.is-active { display: block; }
+.pane[hidden] { display: none !important; }
+
+/* corner accents */
+.holo-corners::before,
+.holo-corners::after {
+  content: "";
+  position: absolute;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(0,255,255,0.6);
+  filter: drop-shadow(0 0 8px rgba(0,255,255,0.3));
+}
+.holo-corners::before { left: 10px; bottom: 10px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+.holo-corners::after  { right: 10px; top: 10px; border-left: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+
+/* mobile tweaks */
+@media (max-width: 600px) {
+  .holo-tabs { gap: 4px; }
+  .holo-tab { padding: 5px 8px; font-size: 0.85rem; }
+}
+
+/* accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .holo-panel::before { animation: none; opacity: 0.15; }
+}
+
+
 
