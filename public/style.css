@@ -175,6 +175,60 @@ button:hover {
   100% { opacity: 0; }
 }
 
+/* Social bar */
+#socials {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 6px;   /* sits just above the copyright line */
+  z-index: 1;
+}
+
+#socials .social {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0,255,255,0.06);
+  border: 1px solid rgba(100,255,255,0.25);
+  box-shadow: inset 0 0 0 1px rgba(0,255,255,0.08);
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+  outline: none;
+}
+
+#socials .social:hover,
+#socials .social:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(0,255,255,0.12);
+  box-shadow: 0 0 18px rgba(0,255,255,0.35),
+              inset 0 0 0 1px rgba(0,255,255,0.18);
+}
+
+#socials svg {
+  width: 20px;
+  height: 20px;
+  fill: #c9f6ff;
+  opacity: .9;
+  transition: opacity .2s ease, filter .2s ease, transform .15s ease;
+}
+
+#socials .social:hover svg,
+#socials .social:focus-visible svg {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(0,255,255,.65));
+}
+
+/* Mobile sizing */
+@media (max-width: 600px) {
+  #socials { gap: 12px; margin: 18px 0 4px; }
+  #socials .social { width: 34px; height: 34px; }
+  #socials svg { width: 18px; height: 18px; }
+}
+
+body.in-game #socials { display: none; }
+
 #footer {
   margin-top: auto;
   padding: 20px 0;

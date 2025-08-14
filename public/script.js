@@ -206,6 +206,7 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
   document.querySelector(".round-toggle").style.display = "none"; // 👈 HIDE ROUND TOGGLE
   document.getElementById("game").hidden = false;
   document.getElementById("resetBtn").style.display = "inline-block";
+  document.body.classList.add("in-game");
 
   if (chatEl) chatEl.classList.remove("unread");
 
@@ -294,6 +295,7 @@ function startGame() {
 
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
+  document.body.classList.add("in-game");   // ← ADD HERE
   if (holo) holo.style.display = "none";
   buildBoard();
   updateInfo();
