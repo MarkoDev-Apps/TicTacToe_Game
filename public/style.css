@@ -418,7 +418,7 @@ button:hover {
 /* ----- Hologram Rules Panel ----- */
 .holo-panel {
   position: relative;
-  margin: 42px auto 0;
+  margin: 56px auto 0;
   width: min(760px, 92vw);
   padding: 16px 14px 14px;
   border-radius: 14px;
@@ -515,17 +515,9 @@ button:hover {
 .pane.is-active { display: block; }
 .pane[hidden] { display: none !important; }
 
-/* corner accents */
+/* holo - corners */
 .holo-corners::before,
-.holo-corners::after {
-  content: "";
-  position: absolute;
-  width: 18px; height: 18px;
-  border: 2px solid rgba(0,255,255,0.6);
-  filter: drop-shadow(0 0 8px rgba(0,255,255,0.3));
-}
-.holo-corners::before { left: 10px; bottom: 10px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
-.holo-corners::after  { right: 10px; top: 10px; border-left: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+.holo-corners::after { display: none !important; }
 
 /* mobile tweaks */
 @media (max-width: 600px) {
