@@ -2,7 +2,6 @@ const socket = io();
 const boardEl = document.getElementById("board");
 const winSound = document.getElementById("winSound");
 const drawSound = document.getElementById("drawSound");
-
 let board = Array(9).fill(null);
 let current = "X";
 let gameOver = false;
@@ -17,19 +16,20 @@ let myMark = "X";
 let xName = "";
 let oName = "";
 let chatEl, chatMessages, chatInput, chatSend, chatToggle;
+let holo;
 const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
 document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("startBtn").onclick = startGame;
 document.getElementById("resetBtn").onclick = () => resetGame(true);
-
 chatEl = document.getElementById("chat");
 chatMessages = document.getElementById("chat-messages");
 chatInput = document.getElementById("chat-input");
 chatSend = document.getElementById("chat-send");
 chatToggle = document.getElementById("chat-toggle");
 const chatForm = document.getElementById("chat-input-row");
+holo = document.getElementById("holo-rules");
 
 function setChatCollapsed(collapsed) {
   if (!chatEl) return;
@@ -167,6 +167,8 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
     playerName = O.name;
     opponentName = X.name;
   }
+  document.body.classList.add("in-game");
+  if (holo) holo.style.display = "none";
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
   document.getElementById("multiBtn").style.display = "none";
@@ -238,6 +240,9 @@ function startGame() {
     document.getElementById("p1").style.border = "2px solid red";
     return;
   }
+
+  document.body.classList.add("in-game");
+  if (holo) holo.style.display = "none";
 
   document.getElementById("subtitle").style.display = "none";
   document.getElementById("name-entry").hidden = true;
@@ -399,6 +404,8 @@ document.getElementById("turn").textContent = "";
 document.getElementById("scores").textContent = "";
   document.getElementById("game").hidden = true;
   document.getElementById("winMessage").textContent = "";
+  document.body.classList.remove("in-game");
+if (holo) holo.style.display = "";
 
   // Show landing UI again
   document.getElementById("subtitle").style.display = "block";
