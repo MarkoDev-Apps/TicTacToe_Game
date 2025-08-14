@@ -26,6 +26,7 @@ let xName = "";
 let oName = "";
 let chatEl, chatMessages, chatInput, chatSend, chatToggle;
 let holo;
+let cpuThinking = false;
 const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
@@ -284,34 +285,41 @@ function buildBoard() {
   gameOver = false;
   boardEl.innerHTML = "";
 
-for (let i = 0; i < 9; i++) {
-  const cell = document.createElement("div");
-  cell.className = "cell";
-  cell.dataset.i = i;
-  cell.addEventListener("click", () => {
-    if (gameOver || board[i]) return;
-    const roomId = document.getElementById("game").dataset.room;
-    if (isMultiplayer && roomId) {
-    if (current !== myMark) return;
-     socket.emit("move-room", { roomId, index: i, player: myMark });
-    } else {
-      applyMove({ index: i, player: current });
-    }
-    if (!isMultiplayer) {
-      setTimeout(() => {
-        if (!gameOver) {
-          const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
-          if (open.length) {
-            const cpuIdx = open[Math.floor(Math.random() * open.length)];
-            applyMove({ index: i, player: current });
-          }
-        }
-      }, 400);
-    }
-  });
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.i = i;
 
-  boardEl.appendChild(cell);
-    }
+    cell.addEventListener("click", () => {
+      if (gameOver || board[i]) return;
+
+      if (!isMultiplayer && (current === "O" || cpuThinking)) return;
+
+      const roomId = document.getElementById("game").dataset.room;
+
+      if (isMultiplayer && roomId) {
+        if (current !== myMark) return;
+        socket.emit("move-room", { roomId, index: i, player: myMark });
+      } else {
+
+        applyMove({ index: i, player: current });
+
+        cpuThinking = true;
+        setTimeout(() => {
+          if (!gameOver && current === "O") {
+            const open = board.reduce((a, v, idx) => (v === null ? a.concat(idx) : a), []);
+            if (open.length) {
+              const cpuIdx = open[Math.floor(Math.random() * open.length)];
+              applyMove({ index: cpuIdx, player: "O" });
+            }
+          }
+          cpuThinking = false;
+        }, 400);
+      }
+    });
+
+    boardEl.appendChild(cell);
+  }
 }
 /* ====== Apply Moves ====== */
 function applyMove({ index, player }) {
@@ -399,6 +407,7 @@ function updateInfo() {
 }
 
 function resetRound() {
+cpuThinking = false;
   buildBoard();
   updateInfo();
 }
@@ -414,6 +423,7 @@ function resetGame(manual) {
   myMark = "X";
   xName = "";
   oName = "";
+  cpuThinking = false;
 
   // Reset board
   boardEl.innerHTML = "";
