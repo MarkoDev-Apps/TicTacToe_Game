@@ -1,4 +1,13 @@
-const socket = io();
+const socket = (typeof window !== "undefined" && typeof window.io === "function")
+  ? window.io()
+  : (() => {
+      const listeners = {};
+      return {
+        id: "local",
+        on(evt, cb) { (listeners[evt] ||= []).push(cb); },
+        emit(evt, payload) { (listeners[evt] || []).forEach(fn => fn(payload)); }
+      };
+    })();
 const boardEl = document.getElementById("board");
 const winSound = document.getElementById("winSound");
 const drawSound = document.getElementById("drawSound");
@@ -16,6 +25,7 @@ let myMark = "X";
 let xName = "";
 let oName = "";
 let chatEl, chatMessages, chatInput, chatSend, chatToggle;
+let holo;
 const CHAT_COLLAPSED_KEY = "chat-collapsed-v1";
 
 /* ====== DOM Load ====== */
@@ -82,7 +92,6 @@ chatInput.addEventListener("keydown", (e) => {
   }
 });
 
-const holo = document.getElementById("holo-rules");
 document.querySelectorAll(".holo-tab").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".holo-tab").forEach(b => {
@@ -102,13 +111,26 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
   });
 });
 
-  document.getElementById("multiBtn").onclick = () => {
-  const name = document.getElementById("p1").value.trim();
-  if (!name) { alert("Enter your name first."); return; }
+  // inside document.addEventListener("DOMContentLoaded", () => { ... here ... })
+const multiBtn = document.getElementById("multiBtn");
+
+// If you added the socket fallback I suggested earlier, this detects "no server"
+const hasSocket =
+  typeof window.io === "function" && socket && socket.id !== "local";
+
+if (!hasSocket) {
+  multiBtn.addEventListener("click", () => {
+    alert("Multiplayer requires the Socket.IO server. Start it and reload.");
+  });
+} else {
+  multiBtn.onclick = () => {
+    const name = document.getElementById("p1").value.trim();
+    if (!name) { alert("Enter your name first."); return; }
     const room = prompt("Enter a room name to join or create:");
     if (!room) return alert("Room name is required.");
     socket.emit("join-room", room);
   };
+}
 
   // Restart game with R key
   window.addEventListener("keydown", (e) => {
@@ -273,7 +295,7 @@ for (let i = 0; i < 9; i++) {
     if (current !== myMark) return;
      socket.emit("move-room", { roomId, index: i, player: myMark });
     } else {
-      socket.emit("make-move", { index: i, player: current });
+      applyMove({ index: i, player: current });
     }
     if (!isMultiplayer) {
       setTimeout(() => {
@@ -281,7 +303,7 @@ for (let i = 0; i < 9; i++) {
           const open = board.reduce((a, v, idx) => v === null ? a.concat(idx) : a, []);
           if (open.length) {
             const cpuIdx = open[Math.floor(Math.random() * open.length)];
-            socket.emit("make-move", { index: cpuIdx, player: "O" });
+            applyMove({ index: i, player: current });
           }
         }
       }, 400);
@@ -331,7 +353,7 @@ function applyMove({ index, player }) {
     if (isMultiplayer && roomId) {
    if (isHost) socket.emit("restart-room", { roomId });
  } else {
-   socket.emit("restart-round");
+   resetRound();
  }
       }
     }, 3000);
@@ -348,7 +370,7 @@ function applyMove({ index, player }) {
    if (isMultiplayer && roomId) {
    if (isHost) socket.emit("restart-room", { roomId });
  } else {
-   socket.emit("restart-round");
+   resetRound();
  }
    }, 3000);
     return;
