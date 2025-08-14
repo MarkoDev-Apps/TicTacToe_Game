@@ -404,8 +404,6 @@ document.getElementById("turn").textContent = "";
 document.getElementById("scores").textContent = "";
   document.getElementById("game").hidden = true;
   document.getElementById("winMessage").textContent = "";
-  document.body.classList.remove("in-game");
-if (holo) holo.style.display = "";
 
   // Show landing UI again
   document.getElementById("subtitle").style.display = "block";
