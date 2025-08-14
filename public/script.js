@@ -175,7 +175,6 @@ document.querySelectorAll(".holo-tab").forEach(btn => {
   document.querySelector(".round-toggle").style.display = "none";
   document.getElementById("game").hidden = false;
   document.getElementById("resetBtn").style.display = "inline-block";
-  document.body.classList.add("in-game");
  if (chatEl) chatEl.classList.remove("unread");
  if (chatEl && chatInput) {
  chatEl.hidden = false;
