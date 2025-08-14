@@ -249,7 +249,7 @@ function startGame() {
   document.getElementById("game").hidden = false;
   const selectedMode = document.querySelector('input[name="modeWin"]:checked').value;
   gameMode = parseInt(selectedMode, 10);
-  document.body.classList.add("in-game");
+  //document.body.classList.add("in-game");
   if (holo) holo.style.display = "none";
   buildBoard();
   updateInfo();
